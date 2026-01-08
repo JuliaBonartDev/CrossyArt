@@ -1,0 +1,67 @@
+.btn {
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-style: italic;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+/* Primary variant - light blue buttons */
+.btn-primary {
+  background-color: #d4e8f7;
+  color: black;
+  border: 2px solid #b0d4f1;
+}
+
+.btn-primary:hover {
+  background-color: #c0dff0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Secondary variant - darker/accent buttons */
+.btn-secondary {
+  background-color: #2d3e5f;
+  color: #ffffff;
+  border: 2px solid #1e2936;
+}
+
+.btn-secondary:hover {
+  background-color: #3d4f73;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Danger variant - red buttons */
+.btn-danger {
+  background-color: #263C7A;
+  color: #ffffff;
+  border: 2px solid #1e2936;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Size variants */
+.btn-small {
+  padding: 8px 16px;
+  font-size: 13px;
+}
+
+.btn-medium {
+  padding: 8px 24px;
+  font-size: 15px;
+}
+
+.btn-large {
+  padding: 12px 32px;
+  font-size: 18px;
+  width: 100%;
+}
