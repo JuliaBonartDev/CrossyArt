@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
 import './Home.css';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState(null);
+  const [processedImage, setProcessedImage] = useState(null);
+  const fileInputRef = useRef(null);
+  const canvasRef = useRef(null);
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },
@@ -12,8 +15,61 @@ export default function Home() {
     { size: 300, label: '300\nX\n300' }
   ];
 
+  // Handler para procesar la imagen
+  const handleImageLoad = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        // Obtener el canvas y su contexto
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+
+        // Calcular el tamaño cuadrado (el lado más largo de la imagen)
+        const size = Math.max(img.width, img.height);
+        canvas.width = size;
+        canvas.height = size;
+
+        // Pintar fondo negro
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, size, size);
+
+        // Centrar la imagen
+        const x = (size - img.width) / 2;
+        const y = (size - img.height) / 2;
+        ctx.drawImage(img, x, y);
+
+        // Convertir el canvas a imagen y mostrar
+        const imageDataUrl = canvas.toDataURL();
+        setProcessedImage(imageDataUrl);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Handler para abrir el explorador de archivos
+  const handleDownloadImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
   return (
     <div className="home">
+      {/* Canvas oculto para procesar la imagen */}
+      <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+
+      {/* Input file oculto */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleImageLoad}
+        style={{ display: 'none' }}
+      />
+
       {/* Header */}
       <header className="header">
         <div className="header-nav">
@@ -30,13 +86,21 @@ export default function Home() {
         {/* Section 1: Upload Image */}
         <section className="upload-section">
           <ImageContainer>
-            <p>Your image goes here</p>
+            {processedImage ? (
+              <img 
+                src={processedImage} 
+                alt="Processed" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <p>Your image goes here</p>
+            )}
           </ImageContainer>
           
           <div className="button-group">
-            <Button variant="primary" size="medium">Download your image</Button>
+            <Button variant="primary" size="medium" onClick={handleDownloadImageClick}>Download your image</Button>
             <Button variant="danger" size="medium">Delete</Button>
-          </div>
+          </div> 
         </section>
 
         {/* Section 2: Size Selection */}
