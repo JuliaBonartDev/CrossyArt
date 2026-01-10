@@ -56,6 +56,11 @@ export default function Home() {
     fileInputRef.current?.click();
   };
 
+  // Handler para eliminar la imagen cargada
+  const handleDeleteImage = () => {
+    setProcessedImage(null);
+  };
+
   return (
     <div className="home">
       {/* Canvas oculto para procesar la imagen */}
@@ -99,7 +104,7 @@ export default function Home() {
           
           <div className="button-group">
             <Button variant="primary" size="medium" onClick={handleDownloadImageClick}>Download your image</Button>
-            <Button variant="danger" size="medium">Delete</Button>
+            <Button variant="danger" size="medium" onClick={handleDeleteImage}>Delete</Button>
           </div> 
         </section>
 
