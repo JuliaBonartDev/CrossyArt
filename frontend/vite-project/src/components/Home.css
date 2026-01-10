@@ -4,10 +4,9 @@
   background-position: center;
   background-repeat: no-repeat;
   background-size: cover;
+  background-image: url('../assets/CrossyArt_Fondo_Telefono.png');
   display: flex;
   flex-direction: column;
-  /* padding-top: 20px;
-  padding-bottom: 20px; */
 }
 
 /* Header */
@@ -192,8 +191,20 @@
   margin-top: 8px;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ===================== RESPONSIVE ===================== */
+
+/* Mobile - Default (hasta 767px) */
+@media (max-width: 767px) {
+  .home {
+    min-height: 100vh;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: url('../assets/CrossyArt_Fondo_Telefono.png');
+    display: flex;
+    flex-direction: column;
+    }
   .main-content {
     max-width: 100%;
     gap: 20px;
@@ -207,5 +218,235 @@
 
   .size-options {
     gap: 12px;
+  }
+}
+
+/* Tablets - 768px a 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Telefono.png');
+  }
+
+  .main-content {
+    max-width: 650px;
+    gap: 25px;
+  }
+
+  .size-box {
+    width: 90px;
+    height: 90px;
+    font-size: 11px;
+  }
+
+  .header-nav {
+    gap: 15px;
+  }
+
+  .upload-section {
+    gap: 15px;
+  }
+}
+
+/* iPad Pro - 1024px a 1365px (portrait) */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Comp.png');
+    flex-direction: column;
+  }
+
+  .header {
+    margin-bottom: 20px;
+    padding: 15px 0;
+    position: static;
+  }
+
+  .main-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    gap: 25px;
+  }
+
+  .upload-section {
+    flex: 0 1 260px;
+    width: 260px;
+    gap: 15px;
+  }
+
+  .size-selection-section {
+    flex: 0 1 190px;
+    width: 190px;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .size-options {
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .size-box {
+    width: 70px;
+    height: 70px;
+    font-size: 10px;
+  }
+
+  .download-pattern-section {
+    position: static;
+    width: 190px;
+    justify-content: center;
+  }
+
+  .pattern-display-section {
+    flex: 0 1 260px;
+    width: 260px;
+    position: relative;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 20px;
+  }
+}
+
+/* Nest Hub - 1366px a 1919px */
+@media (min-width: 1366px) and (max-width: 1919px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Comp.png');
+    flex-direction: column;
+  }
+
+  .header {
+    margin-bottom: 20px;
+    padding: 15px 0;
+    position: static;
+  }
+
+  .main-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    gap: 30px;
+  }
+
+  .upload-section {
+    flex: 0 1 280px;
+    width: 280px;
+    gap: 15px;
+  }
+
+  .size-selection-section {
+    flex: 0 1 200px;
+    width: 200px;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .size-options {
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .size-box {
+    width: 60px;
+    height: 60px;
+    font-size: 9px;
+  }
+
+  .download-pattern-section {
+    position: static;
+    width: 200px;
+    justify-content: center;
+  }
+
+  .pattern-display-section {
+    flex: 0 1 280px;
+    width: 280px;
+    position: relative;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 20px;
+  }
+}
+
+/* Nest Hub Max - 1920px en adelante */
+@media (min-width: 1920px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Comp.png');
+    flex-direction: column;
+  }
+
+  .header {
+    margin-bottom: 25px;
+    padding: 20px 0;
+    position: static;
+  }
+
+  .main-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 30px;
+    gap: 40px;
+  }
+
+  .upload-section {
+    flex: 0 1 320px;
+    width: 320px;
+    gap: 15px;
+  }
+
+  .size-selection-section {
+    flex: 0 1 250px;
+    width: 250px;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .size-options {
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .size-box {
+    width: 80px;
+    height: 80px;
+    font-size: 11px;
+  }
+
+  .download-pattern-section {
+    position: static;
+    width: 250px;
+    justify-content: center;
+  }
+
+  .pattern-display-section {
+    flex: 0 1 320px;
+    width: 320px;
+    position: relative;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 30px;
   }
 }

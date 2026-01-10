@@ -2,7 +2,6 @@ import { useState } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
 import './Home.css';
-import Fondo_Telefono from '../assets/CrossyArt_Fondo_Telefono.png';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState(null);
@@ -14,10 +13,7 @@ export default function Home() {
   ];
 
   return (
-    <div 
-      className="home"
-      style={{ backgroundImage: `url(${Fondo_Telefono})` }}
-    >
+    <div className="home">
       {/* Header */}
       <header className="header">
         <div className="header-nav">
