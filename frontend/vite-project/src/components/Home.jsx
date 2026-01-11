@@ -1,13 +1,16 @@
 import { useState, useRef } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
+import dmcColors from '../../rgb-dmc.json';
 import './Home.css';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
+  const [patternImageUrl, setPatternImageUrl] = useState(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
+  const resultCanvasRef = useRef(null);
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },
@@ -61,10 +64,132 @@ export default function Home() {
     setProcessedImage(null);
   };
 
+  // Función para calcular la distancia euclidiana entre dos colores RGB
+  const colorDistance = (c1, c2) => {
+    return Math.sqrt(
+      (c1.r - c2.r) ** 2 +
+      (c1.g - c2.g) ** 2 +
+      (c1.b - c2.b) ** 2
+    );
+  };
+
+  // Función para encontrar el color DMC más cercano a un color RGB
+  const findClosestDMC = (rgb) => {
+    let minDist = Infinity;
+    let closest = null;
+
+    for (const dmc of dmcColors) {
+      const dmcRgb = { r: dmc.r, g: dmc.g, b: dmc.b };
+      const dist = colorDistance(rgb, dmcRgb);
+      
+      if (dist < minDist) {
+        minDist = dist;
+        closest = dmc;
+      }
+    }
+
+    return closest;
+  };
+
+  // Función para procesar la imagen en un patrón de cuadrícula
+  const processImageToPattern = () => {
+    // Validar que se ha seleccionado un tamaño
+    if (!selectedSize) {
+      alert('Por favor, selecciona un tamaño de patrón antes de convertir.');
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+
+    const gridSize = selectedSize;
+    const squareSize = canvas.width / gridSize;
+    const colorGrid = [];
+    const dmcGrid = [];
+
+    // Recorrer la cuadrícula
+    for (let y = 0; y < gridSize; y++) {
+      const colorRow = [];
+      const dmcRow = [];
+      
+      for (let x = 0; x < gridSize; x++) {
+        // Obtener los datos de píxeles del cuadrado actual
+        const imgData = ctx.getImageData(
+          x * squareSize,
+          y * squareSize,
+          squareSize,
+          squareSize
+        );
+
+        // Calcular el color promedio del cuadrado
+        let r = 0, g = 0, b = 0;
+        const data = imgData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          r += data[i];
+          g += data[i + 1];
+          b += data[i + 2];
+        }
+
+        const total = data.length / 4;
+        r = Math.round(r / total);
+        g = Math.round(g / total);
+        b = Math.round(b / total);
+
+        const avgColor = { r, g, b };
+
+        // Encontrar el color DMC más cercano
+        const closestDMC = findClosestDMC(avgColor);
+
+        // Guardar colores originales y DMC
+        colorRow.push(avgColor);
+        dmcRow.push(closestDMC);
+      }
+      
+      colorGrid.push(colorRow);
+      dmcGrid.push(dmcRow);
+    }
+
+    // Guardar el patrón de colores en el estado
+    // setGridPattern(dmcGrid);
+
+    // Crear un canvas de resultado para dibujar el patrón final
+    const resultCanvas = resultCanvasRef.current;
+    resultCanvas.width = canvas.width;
+    resultCanvas.height = canvas.height;
+    const resultCtx = resultCanvas.getContext('2d');
+
+    // Dibujar el patrón final con colores DMC
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        const dmc = dmcGrid[y][x];
+        
+        // Usar el color hex del DMC (agregar # si no existe)
+        const hexColor = dmc.hex.startsWith('#') ? dmc.hex : '#' + dmc.hex;
+        resultCtx.fillStyle = hexColor;
+        resultCtx.fillRect(
+          x * squareSize,
+          y * squareSize,
+          squareSize,
+          squareSize
+        );
+      }
+    }
+
+    // Convertir el canvas a imagen y mostrar
+    const imageDataUrl = resultCanvas.toDataURL();
+    setPatternImageUrl(imageDataUrl);
+    
+    console.log('Patrón DMC creado:', dmcGrid);
+  };
+
   return (
     <div className="home">
       {/* Canvas oculto para procesar la imagen */}
       <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
+
+      {/* Canvas de resultado para el patrón DMC */}
+      <canvas ref={resultCanvasRef} style={{ display: 'none' }}></canvas>
 
       {/* Input file oculto */}
       <input
@@ -134,7 +259,7 @@ export default function Home() {
             </svg>
           </div>
 
-          <Button variant="primary" size="large">CONVERT</Button>
+          <Button variant="primary" size="large" onClick={processImageToPattern}>CONVERT</Button>
         </section>
 
         {/* Section 3: Download Pattern */}
@@ -145,7 +270,15 @@ export default function Home() {
         {/* Section 4: Pattern Display */}
         <section className="pattern-display-section">
           <ImageContainer variant="pattern">
-            <p>Your color pattern goes here</p>
+            {patternImageUrl ? (
+              <img 
+                src={patternImageUrl} 
+                alt="DMC Pattern" 
+                style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+              />
+            ) : (
+              <p>Your color pattern goes here</p>
+            )}
           </ImageContainer>
 
           <div className="heart-icon">
