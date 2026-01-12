@@ -2,12 +2,15 @@ import { useState, useRef } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
 import dmcColors from '../../rgb-dmc.json';
+import { jsPDF } from 'jspdf';
 import './Home.css';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
   const [patternImageUrl, setPatternImageUrl] = useState(null);
+  const [patternColors, setPatternColors] = useState([]);
+  const [showColorModal, setShowColorModal] = useState(false);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -91,11 +94,141 @@ export default function Home() {
     return closest;
   };
 
+  // Función para descargar el patrón
+  const handleDownloadPattern = () => {
+    if (!patternImageUrl) {
+      alert('There is no image to download. Please create a pattern first.');
+      return;
+    }
+
+    const link = document.createElement('a');
+    link.href = patternImageUrl;
+    link.download = 'crossy-art-pattern.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  // Función para abrir la modal de colores
+  const handleViewColorPalette = () => {
+    if (patternColors.length === 0) {
+      alert('There is no pattern created. Please create a pattern first.');
+      return;
+    }
+    setShowColorModal(true);
+  };
+
+  // Función para cerrar la modal
+  const handleCloseColorModal = () => {
+    setShowColorModal(false);
+  };
+
+  // Función para descargar la lista de colores como imagen
+  const handleDownloadColorPalette = () => {
+    if (patternColors.length === 0) {
+      alert('There is no pattern created. Please create a pattern first.');
+      return;
+    }
+
+    // Crear PDF en formato A4
+    const doc = new jsPDF('p', 'mm', 'a4'); // portrait, mm, A4
+    
+    const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+    const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+    const marginTop = 15;
+    const marginSide = 10;
+    const columnWidth = (pageWidth - marginSide * 2 - 10) / 3; // Tres columnas con espacio entre
+    const columnSpacing = 5;
+    
+    // Título
+    doc.setFontSize(18);
+    doc.setTextColor(0, 0, 0);
+    doc.text('CrossyArt - Color Palette', marginSide, marginTop);
+    
+    // Línea separadora
+    doc.setDrawColor(200, 200, 200);
+    doc.line(marginSide, marginTop + 5, pageWidth - marginSide, marginTop + 5);
+    
+    let yPosition = marginTop + 15; // Posición inicial después del título
+    const itemHeight = 20; // Altura de cada item de color
+    const colorBoxSize = 10; // Tamaño del cuadrado de color en mm
+    const maxYPerPage = pageHeight - 15; // Espacio máximo por página
+    
+    // Procesar colores en tres columnas
+    let columnIndex = 0;
+    let currentXPosition = marginSide;
+    
+    for (let i = 0; i < patternColors.length; i++) {
+      const color = patternColors[i];
+      
+      // Si nos pasamos del espacio disponible, crear nueva página
+      if (yPosition + itemHeight > maxYPerPage) {
+        doc.addPage();
+        yPosition = marginTop + 15;
+        columnIndex = 0;
+        currentXPosition = marginSide;
+      }
+      
+      // Calcular la posición X según la columna
+      if (columnIndex === 0) {
+        currentXPosition = marginSide;
+      } else if (columnIndex === 1) {
+        currentXPosition = marginSide + columnWidth + columnSpacing;
+      } else {
+        currentXPosition = marginSide + (columnWidth + columnSpacing) * 2;
+      }
+      
+      const hexColor = color.hex.startsWith('#') ? color.hex : '#' + color.hex;
+      
+      // Convertir hex a RGB para jsPDF
+      const hexToRgb = (hex) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? [
+          parseInt(result[1], 16),
+          parseInt(result[2], 16),
+          parseInt(result[3], 16)
+        ] : [0, 0, 0];
+      };
+      
+      const [r, g, b] = hexToRgb(hexColor);
+      
+      // Dibujar cuadrado de color
+      doc.setFillColor(r, g, b);
+      doc.rect(currentXPosition, yPosition - 4, colorBoxSize, colorBoxSize, 'F');
+      
+      // Borde del cuadrado
+      doc.setDrawColor(150, 150, 150);
+      doc.setLineWidth(0.5);
+      doc.rect(currentXPosition, yPosition - 4, colorBoxSize, colorBoxSize);
+      
+      // Texto: nombre del color
+      doc.setFontSize(10);
+      doc.setTextColor(0, 0, 0);
+      doc.setFont(undefined, 'bold');
+      doc.text(color.description, currentXPosition + colorBoxSize + 3, yPosition);
+      
+      // Texto: Floss y Row
+      doc.setFontSize(8);
+      doc.setFont(undefined, 'normal');
+      doc.setTextColor(80, 80, 80);
+      doc.text(`Floss: ${color.floss} | Row: ${color.row}`, currentXPosition + colorBoxSize + 3, yPosition + 4);
+      
+      // Cambiar de columna
+      columnIndex++;
+      if (columnIndex > 2) {
+        columnIndex = 0;
+        yPosition += itemHeight;
+      }
+    }
+    
+    // Descargar PDF
+    doc.save('crossy-art-color-palette.pdf');
+  };
+
   // Función para procesar la imagen en un patrón de cuadrícula
   const processImageToPattern = () => {
     // Validar que se ha seleccionado un tamaño
     if (!selectedSize) {
-      alert('Por favor, selecciona un tamaño de patrón antes de convertir.');
+      alert('Please select a pattern size before converting.');
       return;
     }
 
@@ -179,8 +312,26 @@ export default function Home() {
     // Convertir el canvas a imagen y mostrar
     const imageDataUrl = resultCanvas.toDataURL();
     setPatternImageUrl(imageDataUrl);
+
+    // Extraer colores únicos del patrón
+    const uniqueColors = new Map();
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        const dmc = dmcGrid[y][x];
+        const key = dmc.hex; // Usar hex como clave para evitar duplicados
+        if (!uniqueColors.has(key)) {
+          uniqueColors.set(key, dmc);
+        }
+      }
+    }
+
+    // Convertir a array y ordenar alfabéticamente por description
+    const colorArray = Array.from(uniqueColors.values())
+      .sort((a, b) => a.description.localeCompare(b.description));
     
-    console.log('Patrón DMC creado:', dmcGrid);
+    setPatternColors(colorArray);
+    
+    console.log('DMC pattern created:', dmcGrid);
   };
 
   return (
@@ -264,7 +415,7 @@ export default function Home() {
 
         {/* Section 3: Download Pattern */}
         <section className="download-pattern-section">
-          <Button variant="primary" size="medium">Download the pattern</Button>
+          <Button variant="primary" size="medium" onClick={handleDownloadPattern}>Download the pattern</Button>
         </section>
 
         {/* Section 4: Pattern Display */}
@@ -297,8 +448,11 @@ export default function Home() {
           <Button variant="primary" size="large">Convert to simbolic</Button>
         </section>
 
-        {/* Delete Button */}
-        <div className="final-delete">
+        <Button variant="primary" size="medium" onClick={handleViewColorPalette}>View color palette</Button>
+
+        {/* Delete and Download Buttons */}
+        <div className="button-group">
+          <Button variant="primary" size="medium" onClick={handleDownloadColorPalette}>Download color palette</Button>
           <Button variant="danger" size="medium">Delete</Button>
         </div>
       </main>
@@ -310,6 +464,35 @@ export default function Home() {
         <Button variant="primary" size="small">Help Center</Button>
         <Button variant="primary" size="small">Language</Button>
       </footer>
+
+      {/* Modal de Color Palette */}
+      {showColorModal && (
+        <div className="modal-overlay" onClick={handleCloseColorModal}>
+          <div className="color-palette-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Color Palette</h2>
+              <button className="modal-close-btn" onClick={handleCloseColorModal}>×</button>
+            </div>
+            <div className="color-palette-list">
+              {patternColors.map((color) => (
+                <div key={color.hex} className="color-item">
+                  <div 
+                    className="color-box"
+                    style={{ 
+                      backgroundColor: color.hex.startsWith('#') ? color.hex : '#' + color.hex 
+                    }}
+                  ></div>
+                  <div className="color-info">
+                    <p className="color-name"><strong>{color.description}</strong></p>
+                    <p className="color-detail">Floss: {color.floss}</p>
+                    <p className="color-detail">Row: {color.row}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
