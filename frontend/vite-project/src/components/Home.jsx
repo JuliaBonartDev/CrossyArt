@@ -122,6 +122,12 @@ export default function Home() {
     setShowColorModal(false);
   };
 
+  // Función para eliminar el patrón
+  const handleDeletePattern = () => {
+    setPatternImageUrl(null);
+    setPatternColors([]);
+  };
+
   // Función para descargar la lista de colores como imagen
   const handleDownloadColorPalette = () => {
     if (patternColors.length === 0) {
@@ -453,7 +459,7 @@ export default function Home() {
         {/* Delete and Download Buttons */}
         <div className="button-group">
           <Button variant="primary" size="medium" onClick={handleDownloadColorPalette}>Download color palette</Button>
-          <Button variant="danger" size="medium">Delete</Button>
+          <Button variant="danger" size="medium" onClick={handleDeletePattern}>Delete</Button>
         </div>
       </main>
 
