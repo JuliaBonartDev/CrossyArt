@@ -461,6 +461,13 @@
     justify-content: center;
   }
 
+  .download-pattern {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+  }
+
   .pattern-display-section {
     flex: 0 1 320px;
     width: 320px;

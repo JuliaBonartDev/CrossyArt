@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
+import PatternPages from './PatternPages';
 import dmcColors from '../../rgb-dmc.json';
 import { jsPDF } from 'jspdf';
 import './Home.css';
@@ -11,9 +12,11 @@ export default function Home() {
   const [patternImageUrl, setPatternImageUrl] = useState(null);
   const [patternColors, setPatternColors] = useState([]);
   const [showColorModal, setShowColorModal] = useState(false);
+  const [showPatternPagesModal, setShowPatternPagesModal] = useState(false);
   const [originalImageWidth, setOriginalImageWidth] = useState(null);
   const [originalImageHeight, setOriginalImageHeight] = useState(null);
   const [patternDimensions, setPatternDimensions] = useState(null);
+  const [dmcGrid, setDmcGrid] = useState(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -127,6 +130,124 @@ export default function Home() {
   // Función para cerrar la modal
   const handleCloseColorModal = () => {
     setShowColorModal(false);
+  };
+
+  // Función para abrir la modal de páginas del patrón
+  const handleViewPatternPages = () => {
+    if (!patternDimensions || !dmcGrid) {
+      alert('There is no pattern created. Please create a pattern first.');
+      return;
+    }
+    setShowPatternPagesModal(true);
+  };
+
+  // Función para cerrar la modal de páginas del patrón
+  const handleClosePatternPagesModal = () => {
+    setShowPatternPagesModal(false);
+  };
+
+  // Función para descargar las páginas del patrón como PDF
+  const handleDownloadPatternPages = () => {
+    if (!patternDimensions || !dmcGrid) {
+      alert('There is no pattern created. Please create a pattern first.');
+      return;
+    }
+
+    const CELLS_PER_PAGE_WIDTH = 60;
+    const CELLS_PER_PAGE_HEIGHT = 85;
+    const CELL_SIZE_MM = 3;
+
+    // Calcular el desplazamiento (offset) para ignorar los márgenes negros
+    const offsetX = (selectedSize - patternDimensions.width) / 2;
+    const offsetY = (selectedSize - patternDimensions.height) / 2;
+
+    // Calcular número de páginas
+    const pagesHorizontal = Math.ceil(patternDimensions.width / CELLS_PER_PAGE_WIDTH);
+    const pagesVertical = Math.ceil(patternDimensions.height / CELLS_PER_PAGE_HEIGHT);
+    const totalPages = pagesHorizontal * pagesVertical;
+
+    // Función para obtener el fragmento de patrón para una página específica
+    const getPagePattern = (pageIndex) => {
+      const pageRow = Math.floor(pageIndex / pagesHorizontal);
+      const pageCol = pageIndex % pagesHorizontal;
+
+      const startY = pageRow * CELLS_PER_PAGE_HEIGHT;
+      const startX = pageCol * CELLS_PER_PAGE_WIDTH;
+
+      const endY = Math.min(startY + CELLS_PER_PAGE_HEIGHT, patternDimensions.height);
+      const endX = Math.min(startX + CELLS_PER_PAGE_WIDTH, patternDimensions.width);
+
+      const pagePattern = [];
+      for (let y = startY; y < endY; y++) {
+        const row = [];
+        for (let x = startX; x < endX; x++) {
+          const gridY = Math.round(y + offsetY);
+          const gridX = Math.round(x + offsetX);
+          
+          if (gridY < dmcGrid.length && gridX < dmcGrid[gridY].length) {
+            row.push(dmcGrid[gridY][gridX]);
+          } else {
+            row.push(null);
+          }
+        }
+        pagePattern.push(row);
+      }
+
+      return pagePattern;
+    };
+
+    // Crear PDF
+    const doc = new jsPDF('p', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
+    const pageHeight = doc.internal.pageSize.getHeight(); // 297mm
+
+    // Iterar sobre cada página
+    for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
+      if (pageIndex > 0) {
+        doc.addPage();
+      }
+
+      const pagePattern = getPagePattern(pageIndex);
+
+      // Dibujar cada celda
+      for (let y = 0; y < pagePattern.length; y++) {
+        for (let x = 0; x < pagePattern[y].length; x++) {
+          const dmc = pagePattern[y][x];
+          
+          // Calcular posición en mm
+          const posX = 10 + x * CELL_SIZE_MM; // Margen izquierdo de 10mm
+          const posY = 10 + y * CELL_SIZE_MM; // Margen superior de 10mm
+
+          // Convertir hex a RGB para jsPDF
+          const hexColor = dmc ? (dmc.hex.startsWith('#') ? dmc.hex : '#' + dmc.hex) : '#ffffff';
+          const hexToRgb = (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? [
+              parseInt(result[1], 16),
+              parseInt(result[2], 16),
+              parseInt(result[3], 16)
+            ] : [255, 255, 255];
+          };
+
+          const [r, g, b] = hexToRgb(hexColor);
+          doc.setFillColor(r, g, b);
+          doc.rect(posX, posY, CELL_SIZE_MM, CELL_SIZE_MM, 'F');
+
+          // Dibujar borde
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.1);
+          doc.rect(posX, posY, CELL_SIZE_MM, CELL_SIZE_MM);
+        }
+      }
+
+      // Agregar número de página
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Page ${pageIndex + 1} of ${totalPages}`, pageWidth - 30, pageHeight - 10);
+    }
+
+    // Descargar PDF
+    doc.save('crossy-art-pattern-pages.pdf');
   };
 
   // Función para eliminar el patrón
@@ -354,6 +475,7 @@ export default function Home() {
       .sort((a, b) => a.description.localeCompare(b.description));
     
     setPatternColors(colorArray);
+    setDmcGrid(dmcGrid);
     
     console.log('DMC pattern created:', dmcGrid);
   };
@@ -439,7 +561,11 @@ export default function Home() {
 
         {/* Section 3: Download Pattern */}
         <section className="download-pattern-section">
+          <div className="button-group">
           <Button variant="primary" size="medium" onClick={handleDownloadPattern}>Download the pattern</Button>
+
+          <Button variant="primary" size="medium" onClick={handleDownloadPatternPages}>Download pattern pages</Button>
+          </div>
           
           {patternDimensions && (
             <div className="pattern-dimensions">
@@ -478,7 +604,11 @@ export default function Home() {
           <Button variant="primary" size="large">Convert to simbolic</Button>
         </section>
 
+        <div className="button-group">        
         <Button variant="primary" size="medium" onClick={handleViewColorPalette}>View color palette</Button>
+
+        <Button variant="primary" size="medium" onClick={handleViewPatternPages}>View pattern pages</Button>
+        </div>
 
         {/* Delete and Download Buttons */}
         <div className="button-group">
@@ -522,6 +652,16 @@ export default function Home() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Modal de Pattern Pages */}
+      {showPatternPagesModal && patternDimensions && dmcGrid && (
+        <PatternPages 
+          patternDimensions={patternDimensions}
+          dmcGrid={dmcGrid}
+          gridSize={selectedSize}
+          onClose={handleClosePatternPagesModal}
+        />
       )}
     </div>
   );
