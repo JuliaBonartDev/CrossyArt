@@ -127,7 +127,29 @@
 .download-pattern-section {
   width: 100%;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pattern-dimensions {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.pattern-dimensions p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 25px;
+  font-weight: 500;
+}
+
+.pattern-dimensions strong {
+  color: #fff;
+  font-weight: 700;
 }
 
 /* Pattern Display Section */

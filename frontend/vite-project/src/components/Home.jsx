@@ -11,6 +11,9 @@ export default function Home() {
   const [patternImageUrl, setPatternImageUrl] = useState(null);
   const [patternColors, setPatternColors] = useState([]);
   const [showColorModal, setShowColorModal] = useState(false);
+  const [originalImageWidth, setOriginalImageWidth] = useState(null);
+  const [originalImageHeight, setOriginalImageHeight] = useState(null);
+  const [patternDimensions, setPatternDimensions] = useState(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -30,6 +33,10 @@ export default function Home() {
     reader.onload = (e) => {
       const img = new Image();
       img.onload = () => {
+        // Guardar el tamaño original de la imagen
+        setOriginalImageWidth(img.width);
+        setOriginalImageHeight(img.height);
+
         // Obtener el canvas y su contexto
         const canvas = canvasRef.current;
         const ctx = canvas.getContext('2d');
@@ -126,6 +133,7 @@ export default function Home() {
   const handleDeletePattern = () => {
     setPatternImageUrl(null);
     setPatternColors([]);
+    setPatternDimensions(null);
   };
 
   // Función para descargar la lista de colores como imagen
@@ -319,6 +327,16 @@ export default function Home() {
     const imageDataUrl = resultCanvas.toDataURL();
     setPatternImageUrl(imageDataUrl);
 
+    // Calcular las dimensiones reales del patrón sin márgenes negros
+    if (originalImageWidth && originalImageHeight) {
+      const patternWidthInCells = Math.round(originalImageWidth / squareSize);
+      const patternHeightInCells = Math.round(originalImageHeight / squareSize);
+      setPatternDimensions({
+        width: patternWidthInCells,
+        height: patternHeightInCells
+      });
+    }
+
     // Extraer colores únicos del patrón
     const uniqueColors = new Map();
     for (let y = 0; y < gridSize; y++) {
@@ -422,6 +440,12 @@ export default function Home() {
         {/* Section 3: Download Pattern */}
         <section className="download-pattern-section">
           <Button variant="primary" size="medium" onClick={handleDownloadPattern}>Download the pattern</Button>
+          
+          {patternDimensions && (
+            <div className="pattern-dimensions">
+              <p>Pattern size: <strong>{patternDimensions.width} × {patternDimensions.height}</strong> stitches</p>
+            </div>
+          )}
         </section>
 
         {/* Section 4: Pattern Display */}
