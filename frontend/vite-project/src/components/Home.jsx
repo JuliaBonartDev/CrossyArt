@@ -20,6 +20,7 @@ export default function Home() {
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
+  const dmcCacheRef = useRef({});
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },
@@ -77,6 +78,22 @@ export default function Home() {
     setProcessedImage(null);
   };
 
+  // Función para cuantizar el color (redondear a múltiplos de 3 para agrupar similares)
+  const quantizeColor = (rgb) => {
+    const quantize = (value) => Math.round(value / 3) * 3;
+    return {
+      r: quantize(rgb.r),
+      g: quantize(rgb.g),
+      b: quantize(rgb.b)
+    };
+  };
+
+  // Función para crear una clave única para el caché
+  const getColorKey = (rgb) => {
+    const quantized = quantizeColor(rgb);
+    return `${quantized.r},${quantized.g},${quantized.b}`;
+  };
+
   // Función para calcular la distancia euclidiana entre dos colores RGB
   const colorDistance = (c1, c2) => {
     return Math.sqrt(
@@ -86,8 +103,15 @@ export default function Home() {
     );
   };
 
-  // Función para encontrar el color DMC más cercano a un color RGB
+  // Función para encontrar el color DMC más cercano (con caché)
   const findClosestDMC = (rgb) => {
+    const colorKey = getColorKey(rgb);
+    
+    // Verificar si el color ya está en caché
+    if (dmcCacheRef.current[colorKey]) {
+      return dmcCacheRef.current[colorKey];
+    }
+
     let minDist = Infinity;
     let closest = null;
 
@@ -101,6 +125,8 @@ export default function Home() {
       }
     }
 
+    // Guardar en caché
+    dmcCacheRef.current[colorKey] = closest;
     return closest;
   };
 
@@ -361,6 +387,9 @@ export default function Home() {
 
   // Función para procesar la imagen en un patrón de cuadrícula
   const processImageToPattern = () => {
+    // Limpiar el caché de colores DMC para este nuevo patrón
+    dmcCacheRef.current = {};
+
     // Validar que se ha seleccionado un tamaño
     if (!selectedSize) {
       alert('Please select a pattern size before converting.');
