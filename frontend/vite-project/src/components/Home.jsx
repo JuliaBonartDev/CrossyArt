@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
 import PatternPages from './PatternPages';
@@ -21,6 +21,19 @@ export default function Home() {
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
   const dmcCacheRef = useRef({});
+
+  // Controlar el overflow del body cuando los modales están abiertos
+  useEffect(() => {
+    if (showColorModal || showPatternPagesModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showColorModal, showPatternPagesModal]);
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },

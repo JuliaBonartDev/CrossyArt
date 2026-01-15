@@ -1,6 +1,15 @@
+import { useEffect } from 'react';
 import './PatternPages.css';
 
 export default function PatternPages({ patternDimensions, dmcGrid, gridSize, onClose }) {
+  // Prevenir scroll de la página principal cuando el modal está abierto
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
   const CELLS_PER_PAGE_WIDTH = 60;
   const CELLS_PER_PAGE_HEIGHT = 85;
   const CELL_SIZE_MM = 3;
