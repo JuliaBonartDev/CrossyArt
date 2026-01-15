@@ -600,23 +600,15 @@ export default function Home() {
 
           <Button variant="primary" size="large" onClick={processImageToPattern}>CONVERT</Button>
         </section>
-
-        {/* Section 3: Download Pattern */}
-        <section className="download-pattern-section">
-          <div className="button-group">
-          <Button variant="primary" size="medium" onClick={handleDownloadPattern}>Download the pattern</Button>
-
-          <Button variant="primary" size="medium" onClick={handleDownloadPatternPages}>Download pattern pages</Button>
-          </div>
           
           {patternDimensions && (
             <div className="pattern-dimensions">
               <p>Pattern size: <strong>{patternDimensions.width} × {patternDimensions.height}</strong> stitches</p>
             </div>
           )}
-        </section>
+       
 
-        {/* Section 4: Pattern Display */}
+        {/* Section 3: Pattern Display */}
         <section className="pattern-display-section">
           <ImageContainer variant="pattern">
             {patternImageUrl ? (
@@ -646,16 +638,26 @@ export default function Home() {
           <Button variant="primary" size="large">Convert to simbolic</Button>
         </section>
 
+        {/* Section 3: Download Pattern */}
+        <section className="download-pattern-section">
+          <div className="button-group">
+          <Button variant="primary" size="medium" onClick={handleDownloadPattern}>Download the pattern</Button>
+
+          <Button variant="danger" size="medium" onClick={handleDeletePattern}>Delete</Button>
+          </div>
+          </section>
+
         <div className="button-group">        
         <Button variant="primary" size="medium" onClick={handleViewColorPalette}>View color palette</Button>
 
         <Button variant="primary" size="medium" onClick={handleViewPatternPages}>View pattern pages</Button>
         </div>
 
-        {/* Delete and Download Buttons */}
+        {/* View and Download Buttons */}
         <div className="button-group">
           <Button variant="primary" size="medium" onClick={handleDownloadColorPalette}>Download color palette</Button>
-          <Button variant="danger" size="medium" onClick={handleDeletePattern}>Delete</Button>
+
+          <Button variant="primary" size="medium" onClick={handleDownloadPatternPages}>Download pattern pages</Button>
         </div>
       </main>
 

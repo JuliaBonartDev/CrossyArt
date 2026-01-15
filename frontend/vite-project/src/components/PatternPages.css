@@ -10,6 +10,7 @@
   align-items: center;
   z-index: 1000;
   padding: 20px;
+  overflow: hidden;
 }
 
 .pattern-pages-modal {
@@ -22,6 +23,7 @@
   flex-direction: column;
   overflow: hidden;
   box-shadow: 0 8px 32px rgba(233, 69, 96, 0.3);
+  min-height: 0;
 }
 
 .modal-header {
@@ -77,13 +79,16 @@
 
 .pages-grid-container {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
+  overflow-x: auto;
   padding: 20px;
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
   background: rgba(0, 0, 0, 0.3);
   align-content: flex-start;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 .pattern-page {

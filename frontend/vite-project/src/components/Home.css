@@ -493,6 +493,7 @@
   align-items: center;
   z-index: 1000;
   padding: 20px;
+  overflow: hidden;
 }
 
 .color-palette-modal {
@@ -506,6 +507,7 @@
   flex-direction: column;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   overflow: hidden;
+  min-height: 0;
 }
 
 .modal-header {
@@ -544,11 +546,13 @@
 
 .color-palette-list {
   flex: 1;
-  overflow-y: auto;
+  overflow-y: scroll;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 .color-item {
