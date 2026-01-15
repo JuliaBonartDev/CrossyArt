@@ -5,6 +5,7 @@ import PatternPages from './PatternPages';
 import dmcColors from '../../rgb-dmc.json';
 import { jsPDF } from 'jspdf';
 import './Home.css';
+import './Login.css';
 
 export default function Home() {
   const [selectedSize, setSelectedSize] = useState(null);
@@ -13,6 +14,9 @@ export default function Home() {
   const [patternColors, setPatternColors] = useState([]);
   const [showColorModal, setShowColorModal] = useState(false);
   const [showPatternPagesModal, setShowPatternPagesModal] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [originalImageWidth, setOriginalImageWidth] = useState(null);
   const [originalImageHeight, setOriginalImageHeight] = useState(null);
   const [patternDimensions, setPatternDimensions] = useState(null);
@@ -24,7 +28,7 @@ export default function Home() {
 
   // Controlar el overflow del body cuando los modales están abiertos
   useEffect(() => {
-    if (showColorModal || showPatternPagesModal) {
+    if (showColorModal || showPatternPagesModal || showLoginModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -33,7 +37,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showColorModal, showPatternPagesModal]);
+  }, [showColorModal, showPatternPagesModal, showLoginModal]);
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },
@@ -183,6 +187,27 @@ export default function Home() {
   // Función para cerrar la modal de páginas del patrón
   const handleClosePatternPagesModal = () => {
     setShowPatternPagesModal(false);
+  };
+
+  // Función para abrir la modal de login
+  const handleOpenLoginModal = () => {
+    setShowLoginModal(true);
+  };
+
+  // Función para cerrar la modal de login
+  const handleCloseLoginModal = () => {
+    setShowLoginModal(false);
+    setEmail('');
+    setPassword('');
+  };
+
+  // Función para manejar el submit del formulario de login
+  const handleLoginSubmit = (e) => {
+    e.preventDefault();
+    console.log('Login attempt:', { email, password });
+    // Aquí irá la lógica de login
+    // Por ahora solo cerramos el modal
+    handleCloseLoginModal();
   };
 
   // Función para descargar las páginas del patrón como PDF
@@ -545,7 +570,7 @@ export default function Home() {
           <Button variant="primary" size="small">History</Button>
           <Button variant="primary" size="small">Favorites</Button>
           <Button variant="primary" size="small">Read me</Button>
-          <Button variant="primary" size="small">Login</Button>
+          <Button variant="primary" size="small" onClick={handleOpenLoginModal}>Login</Button>
         </div>
       </header>
 
@@ -706,6 +731,52 @@ export default function Home() {
           gridSize={selectedSize}
           onClose={handleClosePatternPagesModal}
         />
+      )}
+
+      {/* Modal de Login */}
+      {showLoginModal && (
+        <div className="modal-overlay" onClick={handleCloseLoginModal}>
+          <div className="login-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="login-header">
+              <h2>Login</h2>
+            </div>
+            
+            <form className="login-form" onSubmit={handleLoginSubmit}>
+              <div className="form-group">
+                <label htmlFor="email">Email</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="password">Password</label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                />
+              </div>
+
+              <button type="submit" className="login-btn">Login</button>
+            </form>
+
+            <button className="google-login-btn">Login with G</button>
+
+            <div className="login-footer">
+              <p>Dont have an account?</p>
+              <a href="#register" className="register-link">Register now</a>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
