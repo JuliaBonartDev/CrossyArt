@@ -1,0 +1,618 @@
+.home {
+  min-height: 100vh;
+  background-attachment: fixed;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url('../assets/CrossyArt_Fondo_Telefono.png');
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: radial-gradient(#163889, #060E23);
+  margin-bottom: 30px;
+  padding: 20px 0;
+}
+
+.header-nav {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 30px;
+  padding: 0 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Upload Section */
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+.button-group {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.button-group button {
+  flex: 1;
+}
+
+/* Size Selection Section */
+.size-selection-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  align-items: center;
+}
+
+.size-options {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.size-box {
+  width: 100px;
+  height: 100px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  background-color: rgba(80, 60, 120, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 8px;
+}
+
+.size-box:hover {
+  background-color: rgba(80, 60, 120, 0.5);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: scale(1.05);
+}
+
+.size-box.selected {
+  border: 3px solid #e91e63;
+  background-color: rgba(233, 30, 99, 0.2);
+  box-shadow: 0 0 12px rgba(233, 30, 99, 0.5);
+}
+
+.size-text {
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  text-align: center;
+  white-space: pre-line;
+  font-size: 19px;
+}
+
+/* Arrow */
+.arrow-down {
+  display: flex;
+  justify-content: center;
+  animation: bounceArrow 2s infinite;
+}
+
+@keyframes bounceArrow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(8px);
+  }
+}
+
+/* Download Pattern Section */
+.download-pattern-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pattern-dimensions {
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.pattern-dimensions p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 25px;
+  font-weight: 500;
+}
+
+.pattern-dimensions strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* Pattern Display Section */
+.pattern-display-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  position: relative;
+}
+
+.heart-icon {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.heart-icon:hover svg {
+  transform: scale(1.1);
+}
+
+.heart-icon:hover svg path {
+  fill: #e91e63;
+  stroke: white;
+}
+
+/* Final Delete Button */
+.final-delete {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Footer */
+.footer {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(#163889, #060E23);
+  padding: 10px 10px;
+  gap: 8px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  margin-top: 20px;
+}
+
+.footer p {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+.footer > div {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+/* ===================== RESPONSIVE ===================== */
+
+/* Mobile - Default (hasta 767px) */
+@media (max-width: 767px) {
+  .home {
+    min-height: 100vh;
+    background-attachment: fixed;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-image: url('../assets/CrossyArt_Fondo_Telefono.png');
+    display: flex;
+    flex-direction: column;
+    }
+  .main-content {
+    max-width: 100%;
+    gap: 20px;
+  }
+
+  .size-box {
+    width: 80px;
+    height: 80px;
+    font-size: 10px;
+  }
+
+  .size-options {
+    gap: 12px;
+  }
+}
+
+/* Tablets - 768px a 1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Telefono.png');
+  }
+
+  .main-content {
+    max-width: 650px;
+    gap: 25px;
+  }
+
+  .size-box {
+    width: 90px;
+    height: 90px;
+    font-size: 11px;
+  }
+
+  .header-nav {
+    gap: 15px;
+  }
+
+  .upload-section {
+    gap: 15px;
+  }
+}
+
+/* iPad Pro - 1024px a 1365px (portrait) */
+@media (min-width: 1024px) and (max-width: 1365px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Comp.png');
+    flex-direction: column;
+  }
+
+  .header {
+    margin-bottom: 20px;
+    padding: 15px 0;
+    position: static;
+  }
+
+  .main-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    gap: 25px;
+  }
+
+  .upload-section {
+    flex: 0 1 260px;
+    width: 260px;
+    gap: 15px;
+  }
+
+  .size-selection-section {
+    flex: 0 1 190px;
+    width: 190px;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .size-options {
+    flex-direction: row-reverse;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .size-box {
+    width: 70px;
+    height: 70px;
+    font-size: 10px;
+  }
+
+  .download-pattern-section {
+    position: static;
+    width: 190px;
+    justify-content: center;
+  }
+
+  .pattern-display-section {
+    flex: 0 1 260px;
+    width: 260px;
+    position: relative;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 20px;
+  }
+}
+
+/* Nest Hub - 1366px a 1919px */
+@media (min-width: 1366px) and (max-width: 1919px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Comp.png');
+    flex-direction: column;
+  }
+
+  .header {
+    margin-bottom: 20px;
+    padding: 15px 0;
+    position: static;
+  }
+
+  .main-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 20px;
+    gap: 30px;
+  }
+
+  .upload-section {
+    flex: 0 1 280px;
+    width: 280px;
+    gap: 15px;
+  }
+
+  .size-selection-section {
+    flex: 0 1 200px;
+    width: 200px;
+    align-items: center;
+    gap: 15px;
+  }
+
+  .size-options {
+    flex-direction: row;
+    justify-content: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .size-box {
+    width: 60px;
+    height: 60px;
+    font-size: 9px;
+  }
+
+  .download-pattern-section {
+    position: static;
+    width: 200px;
+    justify-content: center;
+  }
+
+  .pattern-display-section {
+    flex: 0 1 280px;
+    width: 280px;
+    position: relative;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 20px;
+  }
+}
+
+/* Nest Hub Max - 1920px en adelante */
+@media (min-width: 1920px) {
+  .home {
+    background-image: url('../assets/CrossyArt_Fondo_Comp.png');
+    flex-direction: column;
+  }
+
+  .header {
+    margin-bottom: 25px;
+    padding: 20px 0;
+    position: static;
+  }
+
+  .main-content {
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 30px;
+    gap: 40px;
+  }
+
+  .upload-section {
+    flex: 0 1 320px;
+    width: 320px;
+    gap: 15px;
+  }
+
+  .size-selection-section {
+    flex: 0 1 250px;
+    width: 250px;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .size-options {
+    flex-direction: row;
+    justify-content: center;
+    gap: 15px;
+    flex-wrap: wrap;
+  }
+
+  .size-box {
+    width: 80px;
+    height: 80px;
+    font-size: 11px;
+  }
+
+  .download-pattern-section {
+    position: static;
+    width: 250px;
+    justify-content: center;
+  }
+
+  .download-pattern {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .pattern-display-section {
+    flex: 0 1 320px;
+    width: 320px;
+    position: relative;
+  }
+
+  .footer {
+    position: static;
+    margin-top: 30px;
+  }
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.color-palette-modal {
+  background: linear-gradient(135deg, #163889, #060E23);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  max-width: 500px;
+  width: 100%;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  min-height: 0;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(22, 56, 137, 0.8);
+}
+
+.modal-header h2 {
+  color: white;
+  margin: 0;
+  font-size: 24px;
+}
+
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.modal-close-btn:hover {
+  color: #FFD700;
+}
+
+.color-palette-list {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
+}
+
+.color-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  transition: background-color 0.3s ease;
+}
+
+.color-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.color-box {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.color-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.color-name {
+  color: white;
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+}
+
+.color-detail {
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  font-size: 18px;
+}
+
+/* Scrollbar styling */
+.color-palette-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.color-palette-list::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.color-palette-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.color-palette-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
