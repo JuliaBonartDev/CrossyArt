@@ -24,7 +24,49 @@ export const clearTokens = () => {
   localStorage.removeItem('refresh_token');
 };
 
-// Fetch wrapper with auth
+// Refresh token function
+export const refreshAccessToken = async () => {
+  const refreshToken = getRefreshToken();
+  
+  if (!refreshToken) {
+    clearTokens();
+    return null;
+  }
+
+  try {
+    const response = await fetch(API_ENDPOINTS.AUTH.REFRESH, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ refresh: refreshToken }),
+    });
+
+    if (!response.ok) {
+      clearTokens();
+      return null;
+    }
+
+    const data = await response.json();
+    
+    if (data.access) {
+      localStorage.setItem('access_token', data.access);
+      // Si hay nuevo refresh token (rotación), también lo guardamos
+      if (data.refresh) {
+        localStorage.setItem('refresh_token', data.refresh);
+      }
+      return data.access;
+    }
+  } catch (error) {
+    console.error('Error refreshing token:', error);
+    clearTokens();
+    return null;
+  }
+
+  return null;
+};
+
+// Fetch wrapper with auth y auto-refresh
 export const apiCall = async (url, options = {}) => {
   const headers = {
     'Content-Type': 'application/json',
@@ -36,10 +78,24 @@ export const apiCall = async (url, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  const response = await fetch(url, {
+  let response = await fetch(url, {
     ...options,
     headers,
   });
+
+  // Si el token expiró (401), intentar refrescar
+  if (response.status === 401) {
+    const newToken = await refreshAccessToken();
+    
+    if (newToken) {
+      // Reintentar la petición con el nuevo token
+      headers['Authorization'] = `Bearer ${newToken}`;
+      response = await fetch(url, {
+        ...options,
+        headers,
+      });
+    }
+  }
 
   if (!response.ok) {
     const error = await response.json();
@@ -48,3 +104,4 @@ export const apiCall = async (url, options = {}) => {
 
   return response.json();
 };
+

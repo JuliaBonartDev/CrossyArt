@@ -147,3 +147,17 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Simple JWT Configuration
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),  # Token acceso válido 15 minutos
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),     # Token refresh válido 7 días
+    'ROTATE_REFRESH_TOKENS': True,                   # Generar nuevo refresh token en cada refresh
+    'BLACKLIST_AFTER_ROTATION': True,                # Invalida refresh token anterior
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
+}
+
+

@@ -1,0 +1,180 @@
+.welcome-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  backdrop-filter: blur(4px);
+}
+
+.welcome-modal {
+  background: linear-gradient(135deg, #163889, #060E23);
+  border: 2px solid rgba(179, 217, 242, 0.3);
+  border-radius: 15px;
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  animation: welcomeSlideUp 0.4s ease-out;
+  overflow: hidden;
+}
+
+@keyframes welcomeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.welcome-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 25px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcome-modal-header h2 {
+  color: #ffffff;
+  font-size: 26px;
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.welcome-modal-close {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: color 0.3s ease;
+}
+
+.welcome-modal-close:hover {
+  color: #FFD700;
+}
+
+.welcome-modal-content {
+  padding: 30px 25px;
+  text-align: center;
+}
+
+.welcome-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.welcome-title {
+  color: #b3d9f2;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 10px 0;
+  letter-spacing: 0.3px;
+}
+
+.welcome-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 18px;
+  margin: 0 0 25px 0;
+  line-height: 1.5;
+}
+
+.welcome-features {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.welcome-feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.feature-icon {
+  font-size: 24px;
+  min-width: 30px;
+}
+
+.feature-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 16px;
+  text-align: left;
+}
+
+.welcome-modal-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 20px 25px 25px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.welcome-register-btn,
+.welcome-login-btn,
+.welcome-skip-btn {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+.welcome-register-btn {
+  background: linear-gradient(135deg, #b3d9f2 0%, #a8cfed 100%);
+  color: #000000;
+}
+
+.welcome-register-btn:hover {
+  background: linear-gradient(135deg, #c5e5f8 0%, #bce0f5 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(179, 217, 242, 0.4);
+}
+
+.welcome-login-btn {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.welcome-login-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.welcome-skip-btn {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-size: 16px;
+  margin-top: 5px;
+}
+
+.welcome-skip-btn:hover {
+  color: rgba(255, 255, 255, 0.9);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
+}

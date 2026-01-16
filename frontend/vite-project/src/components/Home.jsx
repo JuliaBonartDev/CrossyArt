@@ -5,10 +5,16 @@ import PatternPages from './PatternPages';
 import dmcColors from '../../rgb-dmc.json';
 import { jsPDF } from 'jspdf';
 import { authService } from '../services/authService';
+import { useAuth } from '../hooks/useAuth';
+import ProtectedFeature from './ProtectedFeature';
+import WelcomeModal from './WelcomeModal';
 import './Home.css';
 import './Login.css';
 
 export default function Home() {
+  // Auth hook for checking authentication status
+  const { isAuthenticated } = useAuth();
+
   const [selectedSize, setSelectedSize] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
   const [patternImageUrl, setPatternImageUrl] = useState(null);
@@ -17,6 +23,7 @@ export default function Home() {
   const [showPatternPagesModal, setShowPatternPagesModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(!isAuthenticated);
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -36,7 +43,7 @@ export default function Home() {
 
   // Controlar el overflow del body cuando los modales están abiertos
   useEffect(() => {
-    if (showColorModal || showPatternPagesModal || showLoginModal) {
+    if (showColorModal || showPatternPagesModal || showLoginModal || showRegisterModal || showWelcomeModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -45,7 +52,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showColorModal, showPatternPagesModal, showLoginModal]);
+  }, [showColorModal, showPatternPagesModal, showLoginModal, showRegisterModal, showWelcomeModal]);
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },
@@ -653,8 +660,24 @@ export default function Home() {
       {/* Header */}
       <header className="header">
         <div className="header-nav">
-          <Button variant="primary" size="small">History</Button>
-          <Button variant="primary" size="small">Favorites</Button>
+          <ProtectedFeature 
+            isAuthenticated={isAuthenticated}
+            featureName="view history"
+            onLoginClick={handleOpenLoginModal}
+            onRegisterClick={handleOpenRegisterModal}
+          >
+            <Button variant="primary" size="small">History</Button>
+          </ProtectedFeature>
+
+          <ProtectedFeature 
+            isAuthenticated={isAuthenticated}
+            featureName="save favorites"
+            onLoginClick={handleOpenLoginModal}
+            onRegisterClick={handleOpenRegisterModal}
+          >
+            <Button variant="primary" size="small">Favorites</Button>
+          </ProtectedFeature>
+
           <Button variant="primary" size="small">Read me</Button>
           <Button variant="primary" size="small" onClick={handleOpenLoginModal}>Login</Button>
         </div>
@@ -733,18 +756,25 @@ export default function Home() {
             )}
           </ImageContainer>
 
-          <div className="heart-icon">
-            <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
-              <path
-                d="M20 35C20 35 4 26 4 15C4 9.58 8.03 6 12 6C14.5 6 16.8 7.4 18 9.5C19.2 7.4 21.5 6 24 6C27.97 6 32 9.58 32 15C32 26 16 35 16 35"
-                fill="none"
-                stroke="white"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
+          <ProtectedFeature 
+            isAuthenticated={isAuthenticated}
+            featureName="add to favorites"
+            onLoginClick={handleOpenLoginModal}
+            onRegisterClick={handleOpenRegisterModal}
+          >
+            <div className="heart-icon">
+              <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                <path
+                  d="M20 35C20 35 4 26 4 15C4 9.58 8.03 6 12 6C14.5 6 16.8 7.4 18 9.5C19.2 7.4 21.5 6 24 6C27.97 6 32 9.58 32 15C32 26 16 35 16 35"
+                  fill="none"
+                  stroke="white"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+            </div>
+          </ProtectedFeature>
 
           <Button variant="primary" size="large">Convert to simbolic</Button>
         </section>
@@ -825,6 +855,7 @@ export default function Home() {
           <div className="login-modal" onClick={(e) => e.stopPropagation()}>
             <div className="login-header">
               <h2>Login</h2>
+              <button className="modal-close-btn" onClick={handleCloseLoginModal}>×</button>
             </div>
             
             {loginError && (
@@ -892,6 +923,7 @@ export default function Home() {
           <div className="register-modal" onClick={(e) => e.stopPropagation()}>
             <div className="register-header">
               <h2>Registration</h2>
+              <button className="modal-close-btn" onClick={handleCloseRegisterModal}>×</button>
             </div>
             
             {registerError && (
@@ -987,6 +1019,20 @@ export default function Home() {
           </div>
         </div>
       )}
+
+      {/* Welcome Modal for non-authenticated users */}
+      <WelcomeModal
+        isVisible={showWelcomeModal}
+        onClose={() => setShowWelcomeModal(false)}
+        onRegisterClick={() => {
+          setShowWelcomeModal(false);
+          handleOpenRegisterModal();
+        }}
+        onLoginClick={() => {
+          setShowWelcomeModal(false);
+          handleOpenLoginModal();
+        }}
+      />
     </div>
   );
 }

@@ -18,8 +18,6 @@ if users.exists():
     for user in users:
         print(f"👤 Usuario: {user.username}")
         print(f"   Email: {user.email}")
-        print(f"   Nombre: {user.first_name or '(no especificado)'}")
-        print(f"   Apellido: {user.last_name or '(no especificado)'}")
         print(f"   Fecha de registro: {user.date_joined.strftime('%d/%m/%Y %H:%M:%S')}")
         print(f"   Activo: {'✓ Sí' if user.is_active else '✗ No'}")
         print()

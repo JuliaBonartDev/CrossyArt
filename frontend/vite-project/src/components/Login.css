@@ -26,8 +26,11 @@
 }
 
 .login-header {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 30px;
+  position: relative;
 }
 
 .login-header h2 {
@@ -37,6 +40,13 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   font-family: 'Cardo', serif;
+  text-align: center;
+}
+
+.login-header .modal-close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .login-form {
@@ -170,6 +180,8 @@
   left: 0;
   right: 0;
   bottom: 0;
+  margin: 0;
+  padding: 0;
   background-color: rgba(0, 0, 0, 0.7);
   display: flex;
   justify-content: center;
@@ -181,18 +193,19 @@
 /* Responsive */
 @media (min-width: 768px) {
   .login-modal {
-    max-width: 90%;
-    padding: 30px 25px;
+    max-width: 600px;
+    padding: 30px 30px;
+    margin: 0px;
   }
 
   .login-header h2 {
-    font-size: 24px;
+    font-size: 30px;
   }
 
   .form-group input,
   .login-btn,
   .google-login-btn {
-    font-size: 19px;
+    font-size: 25px;
   }
 }
 
@@ -233,15 +246,18 @@
   border-radius: 15px;
   padding: 40px 35px;
   width: 100%;
-  max-width: 350px;
+  max-width: 400px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 
               inset 0 0 30px rgba(56, 100, 158, 0.1);
   animation: slideUp 0.3s ease-out;
 }
 
 .register-header {
-  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin-bottom: 30px;
+  position: relative;
 }
 
 .register-header h2 {
@@ -251,6 +267,13 @@
   font-weight: 600;
   letter-spacing: 0.5px;
   font-family: 'Cardo', serif;
+  text-align: center;
+}
+
+.register-header .modal-close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
 }
 
 .register-form {
@@ -267,7 +290,7 @@
   color: #000000;
   border: none;
   border-radius: 6px;
-  font-size: 19px;
+  font-size: 25px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -301,7 +324,7 @@
   color: #000000;
   border: none;
   border-radius: 6px;
-  font-size: 19px;
+  font-size: 25px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;

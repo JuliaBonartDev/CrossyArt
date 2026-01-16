@@ -1,0 +1,70 @@
+.protected-feature-wrapper {
+  display: contents;
+}
+
+.protected-feature-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.protected-feature-message {
+  background: linear-gradient(135deg, #163889, #060E23);
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.protected-feature-message p {
+  color: #ffffff;
+  font-size: 16px;
+  margin: 0 0 15px 0;
+  font-weight: 500;
+}
+
+.protected-feature-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.protected-login-btn,
+.protected-register-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.protected-login-btn {
+  background: linear-gradient(135deg, #b3d9f2 0%, #a8cfed 100%);
+  color: #000000;
+}
+
+.protected-login-btn:hover {
+  background: linear-gradient(135deg, #c5e5f8 0%, #bce0f5 100%);
+  transform: translateY(-2px);
+}
+
+.protected-register-btn {
+  background: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.protected-register-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-2px);
+}
