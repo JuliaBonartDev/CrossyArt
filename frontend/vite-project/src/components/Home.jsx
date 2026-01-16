@@ -13,7 +13,7 @@ import './Login.css';
 
 export default function Home() {
   // Auth hook for checking authentication status
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, username: authUsername, logout, refresh } = useAuth();
 
   const [selectedSize, setSelectedSize] = useState(null);
   const [processedImage, setProcessedImage] = useState(null);
@@ -25,6 +25,7 @@ export default function Home() {
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(!isAuthenticated);
   const [password, setPassword] = useState('');
+  const [loginUsername, setLoginUsername] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -207,7 +208,7 @@ export default function Home() {
   // Función para abrir la modal de login
   const handleOpenLoginModal = () => {
     // Resetear campos
-    setUsername('');
+    setLoginUsername('');
     setPassword('');
     setLoginError('');
     setShowRegisterModal(false);
@@ -218,7 +219,7 @@ export default function Home() {
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
     setPassword('');
-    setUsername('');
+    setLoginUsername('');
     setLoginError('');
   };
 
@@ -254,8 +255,11 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const response = await authService.login(username, password);
+      const response = await authService.login(loginUsername, password);
       console.log('Successful login:', response);
+      
+      // Refrescar el hook de autenticación
+      refresh();
       
       // Limpiar formulario y cerrar modal
       handleCloseLoginModal();
@@ -311,24 +315,27 @@ export default function Home() {
         setShowLoginModal(true);
       }, 2000);
     } catch (error) {
-      console.error('Registration error:', error);
+      console.error('Registration error full:', error);
       
       // Manejo específico de errores del servidor
-      if (error.message === 'Registration failed') {
-        // Intentar extraer errores específicos de la respuesta
-        if (error.details) {
-          const details = error.details;
-          if (details.email) {
-            setRegisterError(details.email[0]);
-          } else if (details.username) {
-            setRegisterError(details.username[0]);
-          } else if (details.password) {
-            setRegisterError(details.password[0]);
-          } else {
-            setRegisterError('Error creating account. Please verify the details.');
-          }
+      if (error.message === 'Registration failed' && error.details) {
+        const details = error.details;
+        console.log('Error details:', details);
+        
+        // Intentar extraer el primer error disponible
+        if (details.email) {
+          setRegisterError(Array.isArray(details.email) ? details.email[0] : details.email);
+        } else if (details.username) {
+          setRegisterError(Array.isArray(details.username) ? details.username[0] : details.username);
+        } else if (details.password) {
+          setRegisterError(Array.isArray(details.password) ? details.password[0] : details.password);
+        } else if (details.non_field_errors) {
+          setRegisterError(Array.isArray(details.non_field_errors) ? details.non_field_errors[0] : details.non_field_errors);
         } else {
-          setRegisterError('Error creating account. Please verify the details.');
+          // Si hay otros campos con errores, mostrarlos
+          const firstErrorKey = Object.keys(details)[0];
+          const firstError = details[firstErrorKey];
+          setRegisterError(Array.isArray(firstError) ? firstError[0] : firstError);
         }
       } else {
         setRegisterError('Error creating account. Please verify the details.');
@@ -714,7 +721,14 @@ export default function Home() {
           </ProtectedFeature>
 
           <Button variant="primary" size="small">Read me</Button>
-          <Button variant="primary" size="small" onClick={handleOpenLoginModal}>Login</Button>
+          
+          {isAuthenticated && authUsername ? (
+            <div className="user-avatar" onClick={logout} title="Click to logout">
+              {authUsername.charAt(0).toUpperCase()}
+            </div>
+          ) : (
+            <Button variant="primary" size="small" onClick={handleOpenLoginModal}>Login</Button>
+          )}
         </div>
       </header>
 
@@ -905,8 +919,8 @@ export default function Home() {
                 <input
                   type="text"
                   id="username"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  value={loginUsername}
+                  onChange={(e) => setLoginUsername(e.target.value)}
                   placeholder="your_username"
                   required
                   disabled={isLoading}

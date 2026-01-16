@@ -29,6 +29,11 @@ export const authService = {
     if (response.tokens) {
       setTokens(response.tokens.access, response.tokens.refresh);
     }
+
+    // Guardar username en localStorage
+    if (response.user && response.user.username) {
+      localStorage.setItem('username', response.user.username);
+    }
     
     return response;
   },
@@ -41,9 +46,15 @@ export const authService = {
     return response;
   },
 
+  // Get stored username
+  getUsername: () => {
+    return localStorage.getItem('username');
+  },
+
   // Logout
   logout: () => {
     clearTokens();
+    localStorage.removeItem('username');
   },
 
   // Check if user is authenticated
