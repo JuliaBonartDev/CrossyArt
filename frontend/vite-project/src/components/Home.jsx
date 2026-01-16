@@ -255,7 +255,7 @@ export default function Home() {
 
     try {
       const response = await authService.login(username, password);
-      console.log('Login exitoso:', response);
+      console.log('Successful login:', response);
       
       // Limpiar formulario y cerrar modal
       handleCloseLoginModal();
@@ -263,8 +263,8 @@ export default function Home() {
       // Aquí puedes actualizar el estado global de la aplicación si es necesario
       // Por ejemplo, mostrar el nombre del usuario logueado en el header
     } catch (error) {
-      console.error('Error en login:', error);
-      setLoginError('Usuario o contraseña inválidos');
+      console.error('Login error:', error);
+      setLoginError('Invalid username or password');
     } finally {
       setIsLoading(false);
     }
@@ -277,18 +277,33 @@ export default function Home() {
     setRegisterSuccess('');
     setIsLoading(true);
 
+    // Validar mínimo 8 caracteres en la contraseña
+    if (password.length < 8) {
+      setRegisterError('Password must be at least 8 characters long');
+      setIsLoading(false);
+      return;
+    }
+
     // Validar que las contraseñas coincidan
     if (password !== confirmPassword) {
-      setRegisterError('Las contraseñas no coinciden');
+      setRegisterError('The passwords do not match');
+      setIsLoading(false);
+      return;
+    }
+
+    // Validar email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setRegisterError('Please enter a valid email address');
       setIsLoading(false);
       return;
     }
 
     try {
       const response = await authService.register(username, email, password);
-      console.log('Registro exitoso:', response);
+      console.log('Registration successful:', response);
       
-      setRegisterSuccess('¡Cuenta creada exitosamente! Puedes iniciar sesión ahora.');
+      setRegisterSuccess('Account created successfully! You can now log in.');
       
       // Limpiar formulario después de 2 segundos y ir al login
       setTimeout(() => {
@@ -296,8 +311,28 @@ export default function Home() {
         setShowLoginModal(true);
       }, 2000);
     } catch (error) {
-      console.error('Error en registro:', error);
-      setRegisterError('Error al crear la cuenta. Por favor verifica los datos.');
+      console.error('Registration error:', error);
+      
+      // Manejo específico de errores del servidor
+      if (error.message === 'Registration failed') {
+        // Intentar extraer errores específicos de la respuesta
+        if (error.details) {
+          const details = error.details;
+          if (details.email) {
+            setRegisterError(details.email[0]);
+          } else if (details.username) {
+            setRegisterError(details.username[0]);
+          } else if (details.password) {
+            setRegisterError(details.password[0]);
+          } else {
+            setRegisterError('Error creating account. Please verify the details.');
+          }
+        } else {
+          setRegisterError('Error creating account. Please verify the details.');
+        }
+      } else {
+        setRegisterError('Error creating account. Please verify the details.');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -976,6 +1011,11 @@ export default function Home() {
                   required
                   disabled={isLoading}
                 />
+                {password && (
+                  <div className={`password-strength ${password.length >= 8 ? 'strong' : 'weak'}`}>
+                    {password.length >= 8 ? '✓ Strong password' : `${password.length}/8 characters`}
+                  </div>
+                )}
               </div>
 
               <div className="form-group">

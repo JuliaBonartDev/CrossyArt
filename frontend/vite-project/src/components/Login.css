@@ -290,7 +290,7 @@
   color: #000000;
   border: none;
   border-radius: 6px;
-  font-size: 25px;
+  font-size: 23px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -324,7 +324,7 @@
   color: #000000;
   border: none;
   border-radius: 6px;
-  font-size: 25px;
+  font-size: 23px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -373,4 +373,30 @@
   color: #c5e5f8;
   text-decoration: underline;
   transform: translateX(2px);
+}
+
+@media (min-width: 768px) {
+  .register-modal {
+    max-width: 80%;
+    padding: 40px;
+  }
+}
+/* Password Strength Indicator */
+.password-strength {
+  font-size: 15px;
+  margin-top: 5px;
+  padding: 5px 10px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.password-strength.weak {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+}
+
+.password-strength.strong {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #27ae60;
 }

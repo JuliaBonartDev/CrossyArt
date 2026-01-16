@@ -10,6 +10,18 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ('username', 'email', 'password', 'password2')
 
+    def validate_email(self, value):
+        """Validar que el email no esté duplicado"""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('This email is already registered.')
+        return value
+
+    def validate_username(self, value):
+        """Validar que el username no esté duplicado"""
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError('This username is already taken.')
+        return value
+
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
             raise serializers.ValidationError({'password': 'Las contraseñas no coinciden.'})

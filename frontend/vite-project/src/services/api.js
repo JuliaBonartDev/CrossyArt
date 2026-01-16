@@ -99,7 +99,9 @@ export const apiCall = async (url, options = {}) => {
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(JSON.stringify(error));
+    const err = new Error('Registration failed');
+    err.details = error;
+    throw err;
   }
 
   return response.json();
