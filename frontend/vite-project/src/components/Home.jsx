@@ -4,6 +4,7 @@ import ImageContainer from './ImageContainer';
 import PatternPages from './PatternPages';
 import dmcColors from '../../rgb-dmc.json';
 import { jsPDF } from 'jspdf';
+import { authService } from '../services/authService';
 import './Home.css';
 import './Login.css';
 
@@ -15,8 +16,15 @@ export default function Home() {
   const [showColorModal, setShowColorModal] = useState(false);
   const [showPatternPagesModal, setShowPatternPagesModal] = useState(false);
   const [showLoginModal, setShowLoginModal] = useState(false);
-  const [email, setEmail] = useState('');
+  const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [registerError, setRegisterError] = useState('');
+  const [registerSuccess, setRegisterSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [originalImageWidth, setOriginalImageWidth] = useState(null);
   const [originalImageHeight, setOriginalImageHeight] = useState(null);
   const [patternDimensions, setPatternDimensions] = useState(null);
@@ -191,23 +199,101 @@ export default function Home() {
 
   // Función para abrir la modal de login
   const handleOpenLoginModal = () => {
+    // Resetear campos
+    setUsername('');
+    setPassword('');
+    setLoginError('');
+    setShowRegisterModal(false);
     setShowLoginModal(true);
   };
 
   // Función para cerrar la modal de login
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
+    setPassword('');
+    setUsername('');
+    setLoginError('');
+  };
+
+  // Función para abrir la modal de registro
+  const handleOpenRegisterModal = () => {
+    // Resetear campos
+    setUsername('');
     setEmail('');
     setPassword('');
+    setConfirmPassword('');
+    setRegisterError('');
+    setRegisterSuccess('');
+    setIsLoading(false);
+    setShowLoginModal(false);
+    setShowRegisterModal(true);
+  };
+
+  // Función para cerrar la modal de registro
+  const handleCloseRegisterModal = () => {
+    setShowRegisterModal(false);
+    setUsername('');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setRegisterError('');
+    setRegisterSuccess('');
   };
 
   // Función para manejar el submit del formulario de login
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    console.log('Login attempt:', { email, password });
-    // Aquí irá la lógica de login
-    // Por ahora solo cerramos el modal
-    handleCloseLoginModal();
+    setLoginError('');
+    setIsLoading(true);
+
+    try {
+      const response = await authService.login(username, password);
+      console.log('Login exitoso:', response);
+      
+      // Limpiar formulario y cerrar modal
+      handleCloseLoginModal();
+      
+      // Aquí puedes actualizar el estado global de la aplicación si es necesario
+      // Por ejemplo, mostrar el nombre del usuario logueado en el header
+    } catch (error) {
+      console.error('Error en login:', error);
+      setLoginError('Usuario o contraseña inválidos');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Función para manejar el submit del formulario de registro
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    setRegisterError('');
+    setRegisterSuccess('');
+    setIsLoading(true);
+
+    // Validar que las contraseñas coincidan
+    if (password !== confirmPassword) {
+      setRegisterError('Las contraseñas no coinciden');
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await authService.register(username, email, password);
+      console.log('Registro exitoso:', response);
+      
+      setRegisterSuccess('¡Cuenta creada exitosamente! Puedes iniciar sesión ahora.');
+      
+      // Limpiar formulario después de 2 segundos y ir al login
+      setTimeout(() => {
+        handleCloseRegisterModal();
+        setShowLoginModal(true);
+      }, 2000);
+    } catch (error) {
+      console.error('Error en registro:', error);
+      setRegisterError('Error al crear la cuenta. Por favor verifica los datos.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // Función para descargar las páginas del patrón como PDF
@@ -741,16 +827,23 @@ export default function Home() {
               <h2>Login</h2>
             </div>
             
+            {loginError && (
+              <div style={{ color: '#ff6b6b', marginBottom: '15px', textAlign: 'center', padding: '10px', backgroundColor: '#ffe0e0', borderRadius: '4px' }}>
+                {loginError}
+              </div>
+            )}
+            
             <form className="login-form" onSubmit={handleLoginSubmit}>
               <div className="form-group">
-                <label htmlFor="email">Email</label>
+                <label htmlFor="username">Username</label>
                 <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
+                  type="text"
+                  id="username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="your_username"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
@@ -763,17 +856,133 @@ export default function Home() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
                   required
+                  disabled={isLoading}
                 />
               </div>
 
-              <button type="submit" className="login-btn">Login</button>
+              <button type="submit" className="login-btn" disabled={isLoading}>
+                {isLoading ? 'Logging in...' : 'Login'}
+              </button>
             </form>
 
-            <button className="google-login-btn">Login with G</button>
+            <button className="google-login-btn" disabled={isLoading}>
+              Login with <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="40" height="40" viewBox="0 0 48 48" style={{ marginLeft: '8px' }}>
+                <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+              </svg>
+            </button>
 
             <div className="login-footer">
               <p>Dont have an account?</p>
-              <a href="#register" className="register-link">Register now</a>
+              <button 
+                type="button" 
+                className="register-link" 
+                onClick={handleOpenRegisterModal}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+              >
+                Register now
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Registro */}
+      {showRegisterModal && (
+        <div className="modal-overlay" onClick={handleCloseRegisterModal}>
+          <div className="register-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="register-header">
+              <h2>Registration</h2>
+            </div>
+            
+            {registerError && (
+              <div style={{ color: '#ff6b6b', marginBottom: '15px', textAlign: 'center', padding: '10px', backgroundColor: '#ffe0e0', borderRadius: '4px' }}>
+                {registerError}
+              </div>
+            )}
+
+            {registerSuccess && (
+              <div style={{ color: '#51cf66', marginBottom: '15px', textAlign: 'center', padding: '10px', backgroundColor: '#e7f5e7', borderRadius: '4px' }}>
+                {registerSuccess}
+              </div>
+            )}
+            
+            <form className="register-form" onSubmit={handleRegisterSubmit}>
+              <div className="form-group">
+                <label htmlFor="reg-username">Username</label>
+                <input
+                  type="text"
+                  id="reg-username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Choose a username"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reg-email">Email</label>
+                <input
+                  type="email"
+                  id="reg-email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reg-password">Password</label>
+                <input
+                  type="password"
+                  id="reg-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="reg-confirm-password">Confirm Password</label>
+                <input
+                  type="password"
+                  id="reg-confirm-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+
+              <button type="submit" className="register-btn" disabled={isLoading}>
+                {isLoading ? 'Registering...' : 'Register'}
+              </button>
+            </form>
+
+            <button className="google-register-btn" disabled={isLoading}>
+              Register with <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="40" height="40" viewBox="0 0 48 48" style={{ marginLeft: '8px' }}>
+                <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"></path><path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"></path><path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"></path><path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"></path>
+              </svg>
+            </button>
+
+            <div className="register-footer">
+              <p>Already have an account?</p>
+              <button 
+                type="button" 
+                className="login-link" 
+                onClick={() => {
+                  handleCloseRegisterModal();
+                  setShowLoginModal(true);
+                }}
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+              >
+                Login here
+              </button>
             </div>
           </div>
         </div>
