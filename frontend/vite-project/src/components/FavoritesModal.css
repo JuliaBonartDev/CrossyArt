@@ -1,0 +1,251 @@
+/* Favorites Modal */
+.favorites-modal {
+  background-image: url('../assets/CrossyArt_fondo_telefono2.png');
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  border: 4px solid #38649E;
+  border-radius: 15px;
+  padding: 40px 35px;
+  width: 100%;
+  max-width: 90vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4), 
+              inset 0 0 30px rgba(56, 100, 158, 0.1);
+  animation: slideUp 0.3s ease-out;
+}
+
+.favorites-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.favorites-header h2 {
+  color: #ffffff;
+  font-size: 30px;
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  font-family: 'Cardo', serif;
+  text-align: center;
+}
+
+.favorites-header .modal-close-btn {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.favorites-content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.no-favorites {
+  color: #ffffff;
+  font-size: 18px;
+  text-align: center;
+  padding: 40px 20px;
+  opacity: 0.9;
+}
+
+.favorites-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.favorite-item {
+  background-color: rgba(56, 100, 158, 0.3);
+  border: 1px solid rgba(118, 176, 242, 0.3);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 20px;
+  align-items: center;
+  text-align: center;
+}
+
+.favorite-item:hover {
+  background-color: rgba(56, 100, 158, 0.5);
+  border-color: rgba(118, 176, 242, 0.6);
+  box-shadow: 0 4px 12px rgba(56, 100, 158, 0.3);
+}
+
+.favorite-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  width: 100%;
+}
+
+.favorite-name {
+  color: #ffffff;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+  word-break: break-word;
+}
+
+.favorite-size {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 19px;
+  margin: 0;
+}
+
+.favorite-image {
+  width: 300px;
+  height: 300px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(118, 176, 242, 0.3);
+}
+
+.favorite-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.favorite-actions {
+  display: flex;
+  gap: 12px;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.download-btn,
+.delete-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  flex: 1;
+  max-width: 120px;
+}
+
+.download-btn {
+  background: linear-gradient(135deg, #b3d9f2 0%, #a8cfed 100%);
+  color: #000000;
+}
+
+.download-btn:hover {
+  background: linear-gradient(135deg, #c5e3f7 0%, #b8d6f0 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(179, 217, 242, 0.4);
+}
+
+.download-btn:active {
+  transform: translateY(0);
+}
+
+.delete-btn {
+  background-color: #263C7A;
+  color: #ffffff;
+}
+
+.delete-btn:hover {
+  background-color: #263C7A;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px #c0392b;
+}
+
+.delete-btn:active {
+  transform: translateY(0);
+}
+
+/* Scrollbar styling */
+.favorites-modal::-webkit-scrollbar {
+  width: 8px;
+}
+
+.favorites-modal::-webkit-scrollbar-track {
+  background: rgba(56, 100, 158, 0.1);
+  border-radius: 10px;
+}
+
+.favorites-modal::-webkit-scrollbar-thumb {
+  background: rgba(118, 176, 242, 0.5);
+  border-radius: 10px;
+}
+
+.favorites-modal::-webkit-scrollbar-thumb:hover {
+  background: rgba(118, 176, 242, 0.8);
+}
+
+/* Modal close button styling */
+.modal-close-btn {
+  background: none;
+  border: none;
+  color: #ffffff;
+  font-size: 32px;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  font-weight: 300;
+}
+
+.modal-close-btn:hover {
+  transform: rotate(90deg);
+  color: #ff6b6b;
+}
+
+.modal-close-btn:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+/* Responsive design */
+@media (min-width: 768px) {
+  .favorites-modal {
+    max-width: 90%;
+    padding: 30px 20px;
+  }
+
+  .favorites-header h2 {
+    font-size: 24px;
+  }
+
+  .favorite-item {
+    gap: 12px;
+    padding: 15px;
+  }
+
+  .favorite-image {
+    width: 130px;
+    height: 130px;
+  }
+
+  .favorite-name {
+    font-size: 14px;
+  }
+
+  .favorite-size {
+    font-size: 12px;
+  }
+
+  .download-btn,
+  .delete-btn {
+    font-size: 12px;
+    padding: 8px 15px;
+    max-width: 100px;
+  }
+}

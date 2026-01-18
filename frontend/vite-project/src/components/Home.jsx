@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
 import PatternPages from './PatternPages';
+import FavoritesModal from './FavoritesModal';
 import dmcColors from '../../rgb-dmc.json';
 import { jsPDF } from 'jspdf';
 import { authService } from '../services/authService';
@@ -24,7 +25,10 @@ export default function Home() {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
   const [showWelcomeModal, setShowWelcomeModal] = useState(!isAuthenticated);
+  const [showFavoritesModal, setShowFavoritesModal] = useState(false);
+  const [favorites, setFavorites] = useState([]);
   const [password, setPassword] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [loginUsername, setLoginUsername] = useState('');
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -42,9 +46,14 @@ export default function Home() {
   const resultCanvasRef = useRef(null);
   const dmcCacheRef = useRef({});
 
+  // Actualizar visibilidad del WelcomeModal cuando cambia el estado de autenticación
+  useEffect(() => {
+    setShowWelcomeModal(!isAuthenticated);
+  }, [isAuthenticated]);
+
   // Controlar el overflow del body cuando los modales están abiertos
   useEffect(() => {
-    if (showColorModal || showPatternPagesModal || showLoginModal || showRegisterModal || showWelcomeModal) {
+    if (showColorModal || showPatternPagesModal || showLoginModal || showRegisterModal || showWelcomeModal || showFavoritesModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -53,7 +62,7 @@ export default function Home() {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [showColorModal, showPatternPagesModal, showLoginModal, showRegisterModal, showWelcomeModal]);
+  }, [showColorModal, showPatternPagesModal, showLoginModal, showRegisterModal, showWelcomeModal, showFavoritesModal]);
 
   const sizeOptions = [
     { size: 150, label: '150\nX\n150' },
@@ -209,7 +218,7 @@ export default function Home() {
   const handleOpenLoginModal = () => {
     // Resetear campos
     setLoginUsername('');
-    setPassword('');
+    setLoginPassword('');
     setLoginError('');
     setShowRegisterModal(false);
     setShowLoginModal(true);
@@ -218,9 +227,37 @@ export default function Home() {
   // Función para cerrar la modal de login
   const handleCloseLoginModal = () => {
     setShowLoginModal(false);
-    setPassword('');
+    setLoginPassword('');
     setLoginUsername('');
     setLoginError('');
+  };
+
+  // Función para abrir la modal de favoritos
+  const handleOpenFavoritesModal = () => {
+    setShowFavoritesModal(true);
+  };
+
+  // Función para cerrar la modal de favoritos
+  const handleCloseFavoritesModal = () => {
+    setShowFavoritesModal(false);
+  };
+
+  // Función para guardar un patrón como favorito
+  const handleSaveToFavorites = () => {
+    if (!patternImageUrl || !selectedSize) {
+      alert('Please create a pattern first before saving to favorites.');
+      return;
+    }
+
+    const newFavorite = {
+      imageUrl: patternImageUrl,
+      size: selectedSize,
+      name: `Pattern ${new Date().toLocaleDateString()}`,
+      timestamp: new Date().toISOString(),
+    };
+
+    setFavorites([...favorites, newFavorite]);
+    alert('Pattern saved to favorites!');
   };
 
   // Función para abrir la modal de registro
@@ -255,7 +292,7 @@ export default function Home() {
     setIsLoading(true);
 
     try {
-      const response = await authService.login(loginUsername, password);
+      const response = await authService.login(loginUsername, loginPassword);
       console.log('Successful login:', response);
       
       // Refrescar el hook de autenticación
@@ -717,7 +754,7 @@ export default function Home() {
             onLoginClick={handleOpenLoginModal}
             onRegisterClick={handleOpenRegisterModal}
           >
-            <Button variant="primary" size="small">Favorites</Button>
+            <Button variant="primary" size="small" onClick={handleOpenFavoritesModal}>Favorites</Button>
           </ProtectedFeature>
 
           <Button variant="primary" size="small">Read me</Button>
@@ -811,7 +848,7 @@ export default function Home() {
             onLoginClick={handleOpenLoginModal}
             onRegisterClick={handleOpenRegisterModal}
           >
-            <div className="heart-icon">
+            <button className="heart-icon" onClick={handleSaveToFavorites} title="Add to favorites">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <path
                   d="M20 35C20 35 4 26 4 15C4 9.58 8.03 6 12 6C14.5 6 16.8 7.4 18 9.5C19.2 7.4 21.5 6 24 6C27.97 6 32 9.58 32 15C32 26 16 35 16 35"
@@ -822,7 +859,7 @@ export default function Home() {
                   strokeLinejoin="round"
                 />
               </svg>
-            </div>
+            </button>
           </ProtectedFeature>
 
           <Button variant="primary" size="large">Convert to simbolic</Button>
@@ -932,8 +969,8 @@ export default function Home() {
                 <input
                   type="password"
                   id="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
                   placeholder="••••••••"
                   required
                   disabled={isLoading}
@@ -1086,6 +1123,13 @@ export default function Home() {
           setShowWelcomeModal(false);
           handleOpenLoginModal();
         }}
+      />
+
+      {/* Favorites Modal */}
+      <FavoritesModal
+        isVisible={showFavoritesModal}
+        onClose={handleCloseFavoritesModal}
+        favorites={favorites}
       />
     </div>
   );
