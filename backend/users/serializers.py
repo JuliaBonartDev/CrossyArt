@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from .models import Pattern
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, style={'input_type': 'password'})
@@ -56,3 +57,20 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'email', 'date_joined')
+
+
+class PatternSerializer(serializers.ModelSerializer):
+    user_username = serializers.CharField(source='user.username', read_only=True)
+    image_url = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Pattern
+        fields = ('id', 'user_username', 'image', 'image_url', 'name', 'size', 'description', 'is_favorite', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'created_at', 'updated_at', 'user_username')
+
+    def get_image_url(self, obj):
+        """Retorna la URL completa de la imagen"""
+        request = self.context.get('request')
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url)
+        return None

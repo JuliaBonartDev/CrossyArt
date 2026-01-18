@@ -7,6 +7,13 @@ export const API_ENDPOINTS = {
     LOGIN: `${API_BASE_URL}/auth/login/`,
     PROFILE: `${API_BASE_URL}/auth/profile/`,
     REFRESH: `${API_BASE_URL}/auth/refresh-token/`,
+  },
+  PATTERNS: {
+    CREATE: `${API_BASE_URL}/auth/patterns/`,
+    LIST: `${API_BASE_URL}/auth/patterns/list/`,
+    FAVORITES: `${API_BASE_URL}/auth/patterns/favorites/`,
+    UPDATE: (patternId) => `${API_BASE_URL}/auth/patterns/${patternId}/`,
+    DELETE: (patternId) => `${API_BASE_URL}/auth/patterns/${patternId}/delete/`,
   }
 };
 
@@ -98,10 +105,16 @@ export const apiCall = async (url, options = {}) => {
   }
 
   if (!response.ok) {
-    const error = await response.json();
-    const err = new Error('Registration failed');
+    const error = await response.json().catch(() => ({}));
+    console.error('API Error:', { status: response.status, error, url });
+    const err = new Error(`API Error ${response.status}: ${error?.detail || error?.message || 'Unknown error'}`);
     err.details = error;
     throw err;
+  }
+
+  // Handle 204 No Content responses
+  if (response.status === 204) {
+    return { success: true };
   }
 
   return response.json();

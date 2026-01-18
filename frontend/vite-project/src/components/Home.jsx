@@ -6,6 +6,7 @@ import FavoritesModal from './FavoritesModal';
 import dmcColors from '../../rgb-dmc.json';
 import { jsPDF } from 'jspdf';
 import { authService } from '../services/authService';
+import { patternService } from '../services/patternService';
 import { useAuth } from '../hooks/useAuth';
 import ProtectedFeature from './ProtectedFeature';
 import WelcomeModal from './WelcomeModal';
@@ -27,6 +28,7 @@ export default function Home() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(!isAuthenticated);
   const [showFavoritesModal, setShowFavoritesModal] = useState(false);
   const [favorites, setFavorites] = useState([]);
+  const [isCurrentPatternFavorite, setIsCurrentPatternFavorite] = useState(false);
   const [password, setPassword] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
   const [loginUsername, setLoginUsername] = useState('');
@@ -49,6 +51,13 @@ export default function Home() {
   // Actualizar visibilidad del WelcomeModal cuando cambia el estado de autenticación
   useEffect(() => {
     setShowWelcomeModal(!isAuthenticated);
+  }, [isAuthenticated]);
+
+  // Cargar favoritos cuando el usuario se autentica
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadFavorites();
+    }
   }, [isAuthenticated]);
 
   // Controlar el overflow del body cuando los modales están abiertos
@@ -104,6 +113,9 @@ export default function Home() {
         // Convertir el canvas a imagen y mostrar
         const imageDataUrl = canvas.toDataURL();
         setProcessedImage(imageDataUrl);
+        
+        // Reset heart icon state when loading new image
+        setIsCurrentPatternFavorite(false);
       };
       img.src = e.target.result;
     };
@@ -233,7 +245,13 @@ export default function Home() {
   };
 
   // Función para abrir la modal de favoritos
-  const handleOpenFavoritesModal = () => {
+  const handleOpenFavoritesModal = async () => {
+    try {
+      const favoritesData = await patternService.getUserFavorites();
+      setFavorites(favoritesData);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
     setShowFavoritesModal(true);
   };
 
@@ -242,22 +260,66 @@ export default function Home() {
     setShowFavoritesModal(false);
   };
 
+  // Función para cargar favoritos del backend
+  const loadFavorites = async () => {
+    try {
+      const favoritesData = await patternService.getUserFavorites();
+      setFavorites(favoritesData);
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+    }
+  };
+
   // Función para guardar un patrón como favorito
-  const handleSaveToFavorites = () => {
+  const handleSaveToFavorites = async () => {
     if (!patternImageUrl || !selectedSize) {
       alert('Please create a pattern first before saving to favorites.');
       return;
     }
 
-    const newFavorite = {
-      imageUrl: patternImageUrl,
-      size: selectedSize,
-      name: `Pattern ${new Date().toLocaleDateString()}`,
-      timestamp: new Date().toISOString(),
-    };
+    try {
+      // Convertir canvas a blob para enviar como imagen
+      const canvas = resultCanvasRef.current;
+      if (!canvas) {
+        alert('Canvas not found. Please create a pattern first.');
+        return;
+      }
 
-    setFavorites([...favorites, newFavorite]);
-    alert('Pattern saved to favorites!');
+      canvas.toBlob(async (blob) => {
+        if (!blob) {
+          alert('Failed to create image blob. Please try again.');
+          return;
+        }
+
+        const patternData = {
+          name: `Pattern ${new Date().toLocaleDateString()}`,
+          size: selectedSize,
+          is_favorite: true,
+          description: 'Pattern created from image',
+          image: blob,
+        };
+
+        try {
+          const response = await patternService.createPattern(patternData);
+          
+          // Agregar a favoritos locales
+          setFavorites([...favorites, response]);
+          setIsCurrentPatternFavorite(true);
+          alert('Pattern saved to favorites!');
+        } catch (error) {
+          console.error('Error saving pattern:', error);
+          alert(`Error saving pattern: ${error.message}`);
+        }
+      });
+    } catch (error) {
+      console.error('Error in handleSaveToFavorites:', error);
+      alert('Error preparing pattern to save');
+    }
+  };
+
+  // Función para manejar la eliminación de favoritos
+  const handleDeleteFavorite = (patternId) => {
+    setFavorites(favorites.filter(fav => fav.id !== patternId));
   };
 
   // Función para abrir la modal de registro
@@ -799,7 +861,10 @@ export default function Home() {
               <div
                 key={option.size}
                 className={`size-box ${selectedSize === option.size ? 'selected' : ''}`}
-                onClick={() => setSelectedSize(option.size)}
+                onClick={() => {
+                  setSelectedSize(option.size);
+                  setIsCurrentPatternFavorite(false);
+                }}
               >
                 <span className="size-text">{option.label}</span>
               </div>
@@ -848,7 +913,7 @@ export default function Home() {
             onLoginClick={handleOpenLoginModal}
             onRegisterClick={handleOpenRegisterModal}
           >
-            <button className="heart-icon" onClick={handleSaveToFavorites} title="Add to favorites">
+            <button className={`heart-icon ${isCurrentPatternFavorite ? 'active' : ''}`} onClick={handleSaveToFavorites} title="Add to favorites">
               <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
                 <path
                   d="M20 35C20 35 4 26 4 15C4 9.58 8.03 6 12 6C14.5 6 16.8 7.4 18 9.5C19.2 7.4 21.5 6 24 6C27.97 6 32 9.58 32 15C32 26 16 35 16 35"
@@ -1130,6 +1195,7 @@ export default function Home() {
         isVisible={showFavoritesModal}
         onClose={handleCloseFavoritesModal}
         favorites={favorites}
+        onDeleteFavorite={handleDeleteFavorite}
       />
     </div>
   );

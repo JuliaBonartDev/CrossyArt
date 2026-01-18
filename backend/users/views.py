@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PatternSerializer
+from .models import Pattern
 
 
 @api_view(['POST'])
@@ -82,3 +83,73 @@ def refresh_token(request):
         )
     except Exception as e:
         return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+# Pattern endpoints
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_pattern(request):
+    """
+    Endpoint para crear un nuevo patrón
+    """
+    serializer = PatternSerializer(data=request.data, context={'request': request})
+    if serializer.is_valid():
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_patterns(request):
+    """
+    Endpoint para obtener todos los patrones del usuario autenticado
+    """
+    patterns = Pattern.objects.filter(user=request.user)
+    serializer = PatternSerializer(patterns, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_favorites(request):
+    """
+    Endpoint para obtener los patrones favoritos del usuario
+    """
+    favorites = Pattern.objects.filter(user=request.user, is_favorite=True)
+    serializer = PatternSerializer(favorites, many=True, context={'request': request})
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_pattern(request, pattern_id):
+    """
+    Endpoint para actualizar un patrón (nombre, descripción, favorito, etc)
+    """
+    try:
+        pattern = Pattern.objects.get(id=pattern_id, user=request.user)
+    except Pattern.DoesNotExist:
+        return Response({'error': 'Pattern not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    serializer = PatternSerializer(pattern, data=request.data, partial=True, context={'request': request})
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_pattern(request, pattern_id):
+    """
+    Endpoint para eliminar un patrón
+    """
+    try:
+        pattern = Pattern.objects.get(id=pattern_id, user=request.user)
+    except Pattern.DoesNotExist:
+        return Response({'error': 'Pattern not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    pattern.delete()
+    return Response({'message': 'Pattern deleted successfully'}, status=status.HTTP_204_NO_CONTENT)

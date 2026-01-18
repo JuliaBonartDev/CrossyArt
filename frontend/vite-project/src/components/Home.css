@@ -188,6 +188,15 @@
   transform: scale(0.95);
 }
 
+.heart-icon.active svg {
+  fill: #e91e63;
+}
+
+.heart-icon.active svg path {
+  fill: #e91e63;
+  stroke: #e91e63;
+}
+
 /* Final Delete Button */
 .final-delete {
   display: flex;
