@@ -45,16 +45,18 @@ export const patternService = {
     return response.json();
   },
 
-  // Get all patterns for current user
-  getUserPatterns: async () => {
-    return apiCall(API_ENDPOINTS.PATTERNS.LIST, {
+  // Get all patterns for current user (con paginación)
+  getUserPatterns: async (limit = 20, offset = 0) => {
+    const url = `${API_ENDPOINTS.PATTERNS.LIST}?limit=${limit}&offset=${offset}`;
+    return apiCall(url, {
       method: 'GET',
     });
   },
 
-  // Get favorite patterns for current user
-  getUserFavorites: async () => {
-    return apiCall(API_ENDPOINTS.PATTERNS.FAVORITES, {
+  // Get favorite patterns for current user (con paginación)
+  getUserFavorites: async (limit = 20, offset = 0) => {
+    const url = `${API_ENDPOINTS.PATTERNS.FAVORITES}?limit=${limit}&offset=${offset}`;
+    return apiCall(url, {
       method: 'GET',
     });
   },

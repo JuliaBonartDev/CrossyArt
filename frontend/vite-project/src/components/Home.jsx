@@ -43,6 +43,8 @@ export default function Home() {
   const [originalImageHeight, setOriginalImageHeight] = useState(null);
   const [patternDimensions, setPatternDimensions] = useState(null);
   const [dmcGrid, setDmcGrid] = useState(null);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState('');
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -247,10 +249,25 @@ export default function Home() {
   // Función para abrir la modal de favoritos
   const handleOpenFavoritesModal = async () => {
     try {
-      const favoritesData = await patternService.getUserFavorites();
+      const response = await patternService.getUserFavorites();
+      console.log('Opening Favorites Modal - Response:', response);
+      
+      // Procesar respuesta paginada
+      let favoritesData;
+      if (Array.isArray(response)) {
+        favoritesData = response;
+      } else if (response && response.results && Array.isArray(response.results)) {
+        favoritesData = response.results;
+      } else {
+        favoritesData = [];
+      }
+      
+      console.log('Modal - Setting favorites:', favoritesData);
       setFavorites(favoritesData);
     } catch (error) {
       console.error('Error loading favorites:', error);
+      showNotification('error', 'Failed to load favorites');
+      setFavorites([]);
     }
     setShowFavoritesModal(true);
   };
@@ -263,57 +280,104 @@ export default function Home() {
   // Función para cargar favoritos del backend
   const loadFavorites = async () => {
     try {
-      const favoritesData = await patternService.getUserFavorites();
+      console.log('Loading favorites...');
+      const response = await patternService.getUserFavorites();
+      console.log('API Response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is array?', Array.isArray(response));
+      
+      // Con paginación, la respuesta es: { count, next, previous, results }
+      // Si no está paginado (backward compatibility), response es directamente un array
+      let favoritesData;
+      if (Array.isArray(response)) {
+        console.log('Response is array');
+        favoritesData = response;
+      } else if (response && response.results && Array.isArray(response.results)) {
+        console.log('Response has results property');
+        favoritesData = response.results;
+      } else {
+        console.warn('Unexpected response format:', response);
+        favoritesData = [];
+      }
+      
+      console.log('Parsed favorites:', favoritesData);
+      console.log('Favorites count:', favoritesData.length);
       setFavorites(favoritesData);
+      
+      // Mostrar notificación si hay error
+      if (!response || (typeof response === 'object' && !response.results && !Array.isArray(response))) {
+        showNotification('error', 'Failed to load favorites from server');
+      }
     } catch (error) {
       console.error('Error loading favorites:', error);
+      console.error('Error message:', error.message);
+      showNotification('error', `Failed to load favorites: ${error.message}`);
+      setFavorites([]);
+    }
+  };
+
+  // Función auxiliar para mostrar notificaciones temporales
+  const showNotification = (type, message) => {
+    if (type === 'error') {
+      setUploadError(message);
+      setTimeout(() => setUploadError(''), 3000);
+    } else if (type === 'success') {
+      setUploadSuccess(message);
+      setTimeout(() => setUploadSuccess(''), 3000);
     }
   };
 
   // Función para guardar un patrón como favorito
   const handleSaveToFavorites = async () => {
     if (!patternImageUrl || !selectedSize) {
-      alert('Please create a pattern first before saving to favorites.');
+      showNotification('error', 'Please create a pattern first before saving to favorites.');
       return;
     }
 
+    setIsLoading(true);
     try {
       // Convertir canvas a blob para enviar como imagen
       const canvas = resultCanvasRef.current;
       if (!canvas) {
-        alert('Canvas not found. Please create a pattern first.');
+        showNotification('error', 'Canvas not found. Please create a pattern first.');
+        setIsLoading(false);
         return;
       }
 
       canvas.toBlob(async (blob) => {
-        if (!blob) {
-          alert('Failed to create image blob. Please try again.');
-          return;
-        }
-
-        const patternData = {
-          name: `Pattern ${new Date().toLocaleDateString()}`,
-          size: selectedSize,
-          is_favorite: true,
-          description: 'Pattern created from image',
-          image: blob,
-        };
-
         try {
+          if (!blob) {
+            showNotification('error', 'Failed to create image blob. Please try again.');
+            setIsLoading(false);
+            return;
+          }
+
+          const patternData = {
+            name: `Pattern ${new Date().toLocaleDateString()}`,
+            size: selectedSize,
+            is_favorite: true,
+            description: 'Pattern created from image',
+            image: blob,
+          };
+
           const response = await patternService.createPattern(patternData);
           
           // Agregar a favoritos locales
           setFavorites([...favorites, response]);
           setIsCurrentPatternFavorite(true);
-          alert('Pattern saved to favorites!');
+          showNotification('success', 'Pattern saved to favorites!');
         } catch (error) {
           console.error('Error saving pattern:', error);
-          alert(`Error saving pattern: ${error.message}`);
+          const errorMessage = error.response?.data?.image?.[0] || error.message || 'Failed to save pattern';
+          showNotification('error', `Error: ${errorMessage}`);
+        } finally {
+          setIsLoading(false);
         }
       });
     } catch (error) {
       console.error('Error in handleSaveToFavorites:', error);
-      alert('Error preparing pattern to save');
+      showNotification('error', 'Error preparing pattern to save');
+      setIsLoading(false);
     }
   };
 
@@ -830,6 +894,43 @@ export default function Home() {
           )}
         </div>
       </header>
+
+      {/* Notificaciones de error y éxito */}
+      {uploadError && (
+        <div className="notification notification-error" style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#f8d7da',
+          border: '1px solid #f5c6cb',
+          color: '#721c24',
+          padding: '12px 16px',
+          borderRadius: '4px',
+          zIndex: 1000,
+          maxWidth: '400px',
+          animation: 'slideIn 0.3s ease-in-out'
+        }}>
+          ⚠️ {uploadError}
+        </div>
+      )}
+
+      {uploadSuccess && (
+        <div className="notification notification-success" style={{
+          position: 'fixed',
+          top: '20px',
+          right: '20px',
+          backgroundColor: '#d4edda',
+          border: '1px solid #c3e6cb',
+          color: '#155724',
+          padding: '12px 16px',
+          borderRadius: '4px',
+          zIndex: 1000,
+          maxWidth: '400px',
+          animation: 'slideIn 0.3s ease-in-out'
+        }}>
+          ✅ {uploadSuccess}
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="main-content">

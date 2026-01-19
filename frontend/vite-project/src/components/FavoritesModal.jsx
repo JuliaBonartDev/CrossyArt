@@ -13,6 +13,9 @@ export default function FavoritesModal({
 }) {
   const [isDeleting, setIsDeleting] = useState(null);
 
+  // Validar que favorites sea un array
+  const favoritesArray = Array.isArray(favorites) ? favorites : [];
+
   const handleDownload = async (favorite) => {
     if (!favorite.image_url && !favorite.image) {
       alert('Image URL not available');
@@ -78,11 +81,11 @@ export default function FavoritesModal({
         </div>
 
         <div className="favorites-content">
-          {favorites.length === 0 ? (
+          {favoritesArray.length === 0 ? (
             <p className="no-favorites">No favorite patterns yet. Start saving your creations!</p>
           ) : (
             <div className="favorites-grid">
-              {favorites.map((favorite, index) => (
+              {favoritesArray.map((favorite, index) => (
                 <div key={favorite.id || index} className="favorite-item">
                   <div className="favorite-info">
                     <p className="favorite-name">{favorite.name || `Pattern ${index + 1}`}</p>

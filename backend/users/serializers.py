@@ -68,6 +68,15 @@ class PatternSerializer(serializers.ModelSerializer):
         fields = ('id', 'user_username', 'image', 'image_url', 'name', 'size', 'description', 'is_favorite', 'created_at', 'updated_at')
         read_only_fields = ('id', 'created_at', 'updated_at', 'user_username')
 
+    def validate_image(self, value):
+        """Validar que el tamaño de la imagen no exceda 5MB"""
+        max_size = 5 * 1024 * 1024  # 5MB en bytes
+        if value.size > max_size:
+            raise serializers.ValidationError(
+                f'El tamaño del archivo excede el límite de 5MB. Tamaño actual: {value.size / (1024*1024):.2f}MB'
+            )
+        return value
+
     def get_image_url(self, obj):
         """Retorna la URL completa de la imagen"""
         request = self.context.get('request')

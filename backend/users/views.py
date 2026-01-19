@@ -1,15 +1,34 @@
 from rest_framework import status
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.models import User
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, PatternSerializer
 from .models import Pattern
 
 
+# Throttle classes personalizadas
+class RegistrationThrottle(AnonRateThrottle):
+    """Limita intentos de registro a 5 por hora por IP"""
+    scope = 'registration'
+
+
+class LoginThrottle(AnonRateThrottle):
+    """Limita intentos de login a 10 por hora por IP"""
+    scope = 'login'
+
+
+class PatternUploadThrottle(UserRateThrottle):
+    """Limita subidas de patrones a 50 por hora por usuario"""
+    scope = 'pattern_upload'
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([RegistrationThrottle])
 def register(request):
     """
     Endpoint para registrar un nuevo usuario
@@ -29,6 +48,7 @@ def register(request):
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([LoginThrottle])
 def login(request):
     """
     Endpoint para hacer login y obtener tokens JWT
@@ -89,6 +109,7 @@ def refresh_token(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
+@throttle_classes([PatternUploadThrottle])
 def create_pattern(request):
     """
     Endpoint para crear un nuevo patrón
@@ -105,10 +126,16 @@ def create_pattern(request):
 def get_user_patterns(request):
     """
     Endpoint para obtener todos los patrones del usuario autenticado
+    Retorna patrones paginados (20 por página)
     """
-    patterns = Pattern.objects.filter(user=request.user)
-    serializer = PatternSerializer(patterns, many=True, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    patterns = Pattern.objects.filter(user=request.user).select_related('user')
+    
+    # Aplicar paginación
+    paginator = LimitOffsetPagination()
+    paginated_patterns = paginator.paginate_queryset(patterns, request)
+    
+    serializer = PatternSerializer(paginated_patterns, many=True, context={'request': request})
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(['GET'])
@@ -116,10 +143,16 @@ def get_user_patterns(request):
 def get_user_favorites(request):
     """
     Endpoint para obtener los patrones favoritos del usuario
+    Retorna favoritos paginados (20 por página)
     """
-    favorites = Pattern.objects.filter(user=request.user, is_favorite=True)
-    serializer = PatternSerializer(favorites, many=True, context={'request': request})
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    favorites = Pattern.objects.filter(user=request.user, is_favorite=True).select_related('user')
+    
+    # Aplicar paginación
+    paginator = LimitOffsetPagination()
+    paginated_favorites = paginator.paginate_queryset(favorites, request)
+    
+    serializer = PatternSerializer(paginated_favorites, many=True, context={'request': request})
+    return paginator.get_paginated_response(serializer.data)
 
 
 @api_view(['PATCH'])

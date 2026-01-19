@@ -9,6 +9,41 @@
   flex-direction: column;
 }
 
+/* Notificaciones */
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+}
+
+.notification {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.notification-error {
+  font-weight: 500;
+}
+
+.notification-success {
+  font-weight: 500;
+}
+
 /* Header */
 .header {
   display: flex;

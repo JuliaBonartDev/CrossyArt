@@ -149,6 +149,19 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticatedOrReadOnly',
     ),
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '30/hour',               # Usuarios anónimos: 30 requests/hora
+        'user': '300/hour',              # Usuarios autenticados: 300 requests/hora
+        'registration': '5/hour',        # Throttle custom para registro: 5/hora
+        'login': '10/hour',              # Throttle custom para login: 10/hora
+        'pattern_upload': '50/hour',     # Throttle custom para subir patrones: 50/hora
+    },
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 20,  # Paginar 20 patrones por página
 }
 
 # Simple JWT Configuration
