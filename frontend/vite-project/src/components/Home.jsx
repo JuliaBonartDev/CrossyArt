@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import Button from './Button';
 import ImageContainer from './ImageContainer';
 import PatternPages from './PatternPages';
@@ -55,12 +55,62 @@ export default function Home() {
     setShowWelcomeModal(!isAuthenticated);
   }, [isAuthenticated]);
 
+  // Función auxiliar para mostrar notificaciones temporales (necesario aquí para loadFavorites)
+  const showNotification = useCallback((type, message) => {
+    if (type === 'error') {
+      setUploadError(message);
+      setTimeout(() => setUploadError(''), 3000);
+    } else if (type === 'success') {
+      setUploadSuccess(message);
+      setTimeout(() => setUploadSuccess(''), 3000);
+    }
+  }, []);
+
+  // Función para cargar favoritos del backend (memoizada con useCallback)
+  const loadFavorites = useCallback(async () => {
+    try {
+      console.log('Loading favorites...');
+      const response = await patternService.getUserFavorites();
+      console.log('API Response:', response);
+      console.log('Response type:', typeof response);
+      console.log('Is array?', Array.isArray(response));
+      
+      // Con paginación, la respuesta es: { count, next, previous, results }
+      // Si no está paginado (backward compatibility), response es directamente un array
+      let favoritesData;
+      if (Array.isArray(response)) {
+        console.log('Response is array');
+        favoritesData = response;
+      } else if (response && response.results && Array.isArray(response.results)) {
+        console.log('Response has results property');
+        favoritesData = response.results;
+      } else {
+        console.warn('Unexpected response format:', response);
+        favoritesData = [];
+      }
+      
+      console.log('Parsed favorites:', favoritesData);
+      console.log('Favorites count:', favoritesData.length);
+      setFavorites(favoritesData);
+      
+      // Mostrar notificación si hay error
+      if (!response || (typeof response === 'object' && !response.results && !Array.isArray(response))) {
+        showNotification('error', 'Failed to load favorites from server');
+      }
+    } catch (error) {
+      console.error('Error loading favorites:', error);
+      console.error('Error message:', error.message);
+      showNotification('error', `Failed to load favorites: ${error.message}`);
+      setFavorites([]);
+    }
+  }, [showNotification]);
+
   // Cargar favoritos cuando el usuario se autentica
   useEffect(() => {
     if (isAuthenticated) {
       loadFavorites();
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, loadFavorites]);
 
   // Controlar el overflow del body cuando los modales están abiertos
   useEffect(() => {
@@ -275,56 +325,6 @@ export default function Home() {
   // Función para cerrar la modal de favoritos
   const handleCloseFavoritesModal = () => {
     setShowFavoritesModal(false);
-  };
-
-  // Función para cargar favoritos del backend
-  const loadFavorites = async () => {
-    try {
-      console.log('Loading favorites...');
-      const response = await patternService.getUserFavorites();
-      console.log('API Response:', response);
-      console.log('Response type:', typeof response);
-      console.log('Is array?', Array.isArray(response));
-      
-      // Con paginación, la respuesta es: { count, next, previous, results }
-      // Si no está paginado (backward compatibility), response es directamente un array
-      let favoritesData;
-      if (Array.isArray(response)) {
-        console.log('Response is array');
-        favoritesData = response;
-      } else if (response && response.results && Array.isArray(response.results)) {
-        console.log('Response has results property');
-        favoritesData = response.results;
-      } else {
-        console.warn('Unexpected response format:', response);
-        favoritesData = [];
-      }
-      
-      console.log('Parsed favorites:', favoritesData);
-      console.log('Favorites count:', favoritesData.length);
-      setFavorites(favoritesData);
-      
-      // Mostrar notificación si hay error
-      if (!response || (typeof response === 'object' && !response.results && !Array.isArray(response))) {
-        showNotification('error', 'Failed to load favorites from server');
-      }
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-      console.error('Error message:', error.message);
-      showNotification('error', `Failed to load favorites: ${error.message}`);
-      setFavorites([]);
-    }
-  };
-
-  // Función auxiliar para mostrar notificaciones temporales
-  const showNotification = (type, message) => {
-    if (type === 'error') {
-      setUploadError(message);
-      setTimeout(() => setUploadError(''), 3000);
-    } else if (type === 'success') {
-      setUploadSuccess(message);
-      setTimeout(() => setUploadSuccess(''), 3000);
-    }
   };
 
   // Función para guardar un patrón como favorito
