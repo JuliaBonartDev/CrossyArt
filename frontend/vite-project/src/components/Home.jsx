@@ -10,6 +10,7 @@ import { patternService } from '../services/patternService';
 import { useAuth } from '../hooks/useAuth';
 import ProtectedFeature from './ProtectedFeature';
 import WelcomeModal from './WelcomeModal';
+import { createSymbolMap, drawSymbol, getSymbolForColor } from '../utils/symbolMapper';
 import './Home.css';
 import './Login.css';
 
@@ -45,10 +46,18 @@ export default function Home() {
   const [dmcGrid, setDmcGrid] = useState(null);
   const [uploadError, setUploadError] = useState('');
   const [uploadSuccess, setUploadSuccess] = useState('');
+  const [isSymbolicMode, setIsSymbolicMode] = useState(false);
+  const [symbolMap, setSymbolMap] = useState(null);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
   const dmcCacheRef = useRef({});
+
+  // Inicializar el mapa de símbolos cuando el componente monta
+  useEffect(() => {
+    const map = createSymbolMap(dmcColors);
+    setSymbolMap(map);
+  }, []);
 
   // Actualizar visibilidad del WelcomeModal cuando cambia el estado de autenticación
   useEffect(() => {
@@ -105,13 +114,7 @@ export default function Home() {
     }
   }, [showNotification]);
 
-  // Cargar favoritos cuando el usuario se autentica
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadFavorites();
-    }
-  }, [isAuthenticated, loadFavorites]);
-
+    
   // Controlar el overflow del body cuando los modales están abiertos
   useEffect(() => {
     if (showColorModal || showPatternPagesModal || showLoginModal || showRegisterModal || showWelcomeModal || showFavoritesModal) {
@@ -298,27 +301,7 @@ export default function Home() {
 
   // Función para abrir la modal de favoritos
   const handleOpenFavoritesModal = async () => {
-    try {
-      const response = await patternService.getUserFavorites();
-      console.log('Opening Favorites Modal - Response:', response);
-      
-      // Procesar respuesta paginada
-      let favoritesData;
-      if (Array.isArray(response)) {
-        favoritesData = response;
-      } else if (response && response.results && Array.isArray(response.results)) {
-        favoritesData = response.results;
-      } else {
-        favoritesData = [];
-      }
-      
-      console.log('Modal - Setting favorites:', favoritesData);
-      setFavorites(favoritesData);
-    } catch (error) {
-      console.error('Error loading favorites:', error);
-      showNotification('error', 'Failed to load favorites');
-      setFavorites([]);
-    }
+    await loadFavorites();
     setShowFavoritesModal(true);
   };
 
@@ -617,6 +600,7 @@ export default function Home() {
     setPatternImageUrl(null);
     setPatternColors([]);
     setPatternDimensions(null);
+    setIsSymbolicMode(false);
   };
 
   // Función para descargar la lista de colores como imagen
@@ -841,8 +825,119 @@ export default function Home() {
     
     setPatternColors(colorArray);
     setDmcGrid(dmcGrid);
+    setIsSymbolicMode(false);  // Nuevo patrón siempre comienza en modo color
     
     console.log('DMC pattern created:', dmcGrid);
+  };
+
+  // Función para convertir el patrón a modo simbólico
+  const convertPatternToSymbolic = () => {
+    if (!dmcGrid || !selectedSize || !symbolMap) {
+      alert('Error: Pattern data not available');
+      return;
+    }
+
+    const canvas = resultCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    const gridSize = selectedSize;
+    const squareSize = canvas.width / gridSize;
+
+    // Limpiar el canvas (fondo blanco)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Dibujar cada celda con símbolo
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        const dmc = dmcGrid[y][x];
+        
+        // Fondo blanco
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(
+          x * squareSize,
+          y * squareSize,
+          squareSize,
+          squareSize
+        );
+
+        // Borde gris claro
+        ctx.strokeStyle = '#e0e0e0';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(
+          x * squareSize,
+          y * squareSize,
+          squareSize,
+          squareSize
+        );
+
+        // Dibujar símbolo con su color asignado
+        if (dmc) {
+          // El hex en rgb-dmc.json viene sin #, agregarlo para consistencia
+          const dmcHex = '#' + dmc.hex;
+          const symbolInfo = getSymbolForColor(dmcHex, symbolMap);
+          
+          drawSymbol(
+            ctx,
+            x * squareSize,
+            y * squareSize,
+            squareSize,
+            symbolInfo.symbolType,
+            symbolInfo.color
+          );
+        }
+      }
+    }
+
+    // Convertir canvas a imagen
+    const imageDataUrl = canvas.toDataURL();
+    setPatternImageUrl(imageDataUrl);
+    setIsSymbolicMode(true);
+  };
+
+  // Función para volver al patrón de colores
+  const convertPatternToColors = () => {
+    if (!dmcGrid || !selectedSize) {
+      alert('Error: Pattern data not available');
+      return;
+    }
+
+    const canvas = resultCanvasRef.current;
+    const ctx = canvas.getContext('2d');
+    
+    const gridSize = selectedSize;
+    const squareSize = canvas.width / gridSize;
+
+    // Dibujar el patrón final con colores DMC
+    for (let y = 0; y < gridSize; y++) {
+      for (let x = 0; x < gridSize; x++) {
+        const dmc = dmcGrid[y][x];
+        
+        // Usar el color hex del DMC (agregar # si no existe)
+        const hexColor = dmc.hex.startsWith('#') ? dmc.hex : '#' + dmc.hex;
+        ctx.fillStyle = hexColor;
+        ctx.fillRect(
+          x * squareSize,
+          y * squareSize,
+          squareSize,
+          squareSize
+        );
+      }
+    }
+
+    // Convertir canvas a imagen
+    const imageDataUrl = canvas.toDataURL();
+    setPatternImageUrl(imageDataUrl);
+    setIsSymbolicMode(false);
+  };
+
+  // Función para manejar el toggle de Convert to Symbolic
+  const handleToggleSymbolic = () => {
+    if (isSymbolicMode) {
+      convertPatternToColors();
+    } else {
+      convertPatternToSymbolic();
+    }
   };
 
   return (
@@ -1028,7 +1123,14 @@ export default function Home() {
             </button>
           </ProtectedFeature>
 
-          <Button variant="primary" size="large">Convert to simbolic</Button>
+          <Button 
+            variant="primary" 
+            size="large" 
+            onClick={handleToggleSymbolic}
+            disabled={!patternImageUrl}
+          >
+            {isSymbolicMode ? 'Back to colors' : 'Convert to symbolic'}
+          </Button>
         </section>
 
         {/* Section 3: Download Pattern */}
@@ -1098,6 +1200,8 @@ export default function Home() {
           dmcGrid={dmcGrid}
           gridSize={selectedSize}
           onClose={handleClosePatternPagesModal}
+          isSymbolicMode={isSymbolicMode}
+          symbolMap={symbolMap}
         />
       )}
 

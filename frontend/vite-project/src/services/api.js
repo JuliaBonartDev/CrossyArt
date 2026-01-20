@@ -85,38 +85,47 @@ export const apiCall = async (url, options = {}) => {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
-  let response = await fetch(url, {
-    ...options,
-    headers,
-  });
+  try {
+    let response = await fetch(url, {
+      ...options,
+      headers,
+    });
 
-  // Si el token expiró (401), intentar refrescar
-  if (response.status === 401) {
-    const newToken = await refreshAccessToken();
-    
-    if (newToken) {
-      // Reintentar la petición con el nuevo token
-      headers['Authorization'] = `Bearer ${newToken}`;
-      response = await fetch(url, {
-        ...options,
-        headers,
-      });
+    // Si el token expiró (401), intentar refrescar
+    if (response.status === 401) {
+      const newToken = await refreshAccessToken();
+      
+      if (newToken) {
+        // Reintentar la petición con el nuevo token
+        headers['Authorization'] = `Bearer ${newToken}`;
+        response = await fetch(url, {
+          ...options,
+          headers,
+        });
+      }
     }
-  }
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    console.error('API Error:', { status: response.status, error, url });
-    const err = new Error(`API Error ${response.status}: ${error?.detail || error?.message || 'Unknown error'}`);
-    err.details = error;
-    throw err;
-  }
+    if (!response.ok) {
+      const error = await response.json().catch(() => ({}));
+      console.error('API Error:', { status: response.status, error, url });
+      const err = new Error(`API Error ${response.status}: ${error?.detail || error?.message || 'Unknown error'}`);
+      err.details = error;
+      throw err;
+    }
 
-  // Handle 204 No Content responses
-  if (response.status === 204) {
-    return { success: true };
-  }
+    // Handle 204 No Content responses
+    if (response.status === 204) {
+      return { success: true };
+    }
 
-  return response.json();
+    return response.json();
+  } catch (error) {
+    // Capturar errores de red y otros errores de fetch
+    console.error('Fetch error:', error);
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new Error('Server is unreachable. Please check if the backend is running.');
+    }
+    throw error;
+  }
 };
 
