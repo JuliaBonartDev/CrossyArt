@@ -1,10 +1,10 @@
 /**
  * Symbol Mapper - Sistema avanzado de mapeo color→símbolo
  * Lista curada (prioriza tipográficos) para máxima diferenciación visual.
- * 60 símbolos × 12 colores = 720 combinaciones únicas (suficiente para 454 DMC).
+ * 39 símbolos × 12 colores = 468 combinaciones únicas (suficiente para 454 DMC).
  */
 
-// Definir tipos de símbolos base (60 símbolos, curados)
+// Definir tipos de símbolos base (39 símbolos, curados)
 const symbolTypes = [
   // Números (0-9)
   'num0', 'num1', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9',
@@ -14,20 +14,8 @@ const symbolTypes = [
   'letterK', 'letterL', 'letterM', 'letterN', 'letterO', 'letterP', 'letterQ', 'letterR', 'letterS', 'letterT',
   'letterU', 'letterV', 'letterW', 'letterX', 'letterY', 'letterZ',
 
-  // Formas e iconos muy distintos
-  'heart', 'diamond', 'square', 'triangle', 'circle',
-  'pentagon', 'hexagon', 'octagon', 'decagon', 'semicircle',
-  'cloud',
-
-  // Flechas direccionales (gruesas)
-  'arrowUp', 'arrowDown', 'arrowLeft', 'arrowRight',
-
-  // Marcadores claros
-  'checkmark', 'hash', 'percent', 'equals',
-  'bracket', 'parenthesis', 'quoteMark',
-
-  // Patrones
-  'spiral', 'zigzag'
+  // Extras (muy distintos y no-confusos a tamaño pequeño)
+  'heart', 'diamond', 'square'
 ];
 
 // Colores para diferenciar - colores PRIMARIOS Y VISUALMENTE MUY DISTINTOS
@@ -47,7 +35,7 @@ const symbolColors = [
   { name: 'brown', color: 'rgb(139, 69, 19)' },            // Marrón
 ];
 
-// Generar todas las combinaciones: tipo × color = 1,080 combinaciones únicas
+// Generar todas las combinaciones: tipo × color = 468 combinaciones únicas
 // Orden: PRIMERO todos los símbolos con el primer color, LUEGO todos con el segundo color, etc.
 // Esto evita duplicaciones: cada símbolo aparece con diferentes colores en lugar de repetir colores
 const symbolPatterns = [];

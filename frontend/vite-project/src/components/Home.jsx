@@ -48,6 +48,7 @@ export default function Home() {
   const [uploadSuccess, setUploadSuccess] = useState('');
   const [isSymbolicMode, setIsSymbolicMode] = useState(false);
   const [symbolMap, setSymbolMap] = useState(null);
+  const [isLoadingPatternPages, setIsLoadingPatternPages] = useState(false);
   const fileInputRef = useRef(null);
   const canvasRef = useRef(null);
   const resultCanvasRef = useRef(null);
@@ -273,12 +274,20 @@ export default function Home() {
       alert('There is no pattern created. Please create a pattern first.');
       return;
     }
-    setShowPatternPagesModal(true);
+    setIsLoadingPatternPages(true);
+    showNotification('success', 'Loading pattern pages...');
+    
+    // Simular pequeña pausa para que el usuario vea feedback visual
+    setTimeout(() => {
+      setShowPatternPagesModal(true);
+      setIsLoadingPatternPages(false);
+    }, 300);
   };
 
   // Función para cerrar la modal de páginas del patrón
   const handleClosePatternPagesModal = () => {
     setShowPatternPagesModal(false);
+    showNotification('success', 'Pattern pages closed');
   };
 
   // Función para abrir la modal de login
@@ -1145,7 +1154,14 @@ export default function Home() {
         <div className="button-group">        
         <Button variant="primary" size="medium" onClick={handleViewColorPalette}>View color palette</Button>
 
-        <Button variant="primary" size="medium" onClick={handleViewPatternPages}>View pattern pages</Button>
+        <Button 
+          variant="primary" 
+          size="medium" 
+          onClick={handleViewPatternPages}
+          disabled={isLoadingPatternPages}
+        >
+          {isLoadingPatternPages ? '⏳ Loading...' : 'View pattern pages'}
+        </Button>
         </div>
 
         {/* View and Download Buttons */}
