@@ -1053,7 +1053,7 @@ export default function Home() {
             )}
           </ImageContainer>
           
-          <div className="button-group">
+          <div className="button-group upload-buttons">
             <Button variant="primary" size="medium" onClick={handleDownloadImageClick}>Download your image</Button>
             <Button variant="danger" size="medium" onClick={handleDeleteImage}>Delete</Button>
           </div> 
@@ -1144,14 +1144,14 @@ export default function Home() {
 
         {/* Section 3: Download Pattern */}
         <section className="download-pattern-section">
-          <div className="button-group">
+          <div className="button-group download-pattern-buttons">
           <Button variant="primary" size="medium" onClick={handleDownloadPattern}>Download the pattern</Button>
 
           <Button variant="danger" size="medium" onClick={handleDeletePattern}>Delete</Button>
           </div>
           </section>
 
-        <div className="button-group">        
+        <div className="button-group view-buttons">        
         <Button variant="primary" size="medium" onClick={handleViewColorPalette}>View color palette</Button>
 
         <Button 
@@ -1165,7 +1165,7 @@ export default function Home() {
         </div>
 
         {/* View and Download Buttons */}
-        <div className="button-group">
+        <div className="button-group download-pages-buttons">
           <Button variant="primary" size="medium" onClick={handleDownloadColorPalette}>Download color palette</Button>
 
           <Button variant="primary" size="medium" onClick={handleDownloadPatternPages}>Download pattern pages</Button>

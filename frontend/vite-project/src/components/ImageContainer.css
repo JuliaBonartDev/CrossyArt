@@ -8,6 +8,7 @@
   justify-content: center;
   backdrop-filter: blur(2px);
   transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .image-container:hover {
@@ -18,13 +19,15 @@
 /* Large container for main image upload */
 .image-container-default {
   min-height: 300px;
-  min-width: 300px;
+  width: 100%;
+  min-width: 0;
   gap: 16px;
 }
 
 .image-container-pattern {
   min-height: 300px;
-  min-width: 300px;
+  width: 100%;
+  min-width: 0;
   gap: 16px;
 }
 
