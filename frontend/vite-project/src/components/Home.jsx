@@ -520,6 +520,11 @@ export default function Home() {
     const pagesVertical = Math.ceil(patternDimensions.height / CELLS_PER_PAGE_HEIGHT);
     const totalPages = pagesHorizontal * pagesVertical;
 
+    const normalizeHex = (hex) => {
+      if (!hex) return '#ffffff';
+      return hex.startsWith('#') ? hex : `#${hex}`;
+    };
+
     // Función para obtener el fragmento de patrón para una página específica
     const getPagePattern = (pageIndex) => {
       const pageRow = Math.floor(pageIndex / pagesHorizontal);
@@ -550,6 +555,55 @@ export default function Home() {
       return pagePattern;
     };
 
+    // Renderiza una página (colores o simbólico) a un canvas temporal y devuelve PNG data URL
+    const renderPageToPngDataUrl = (pagePattern) => {
+      const cellPx = 20; // Resolución de render por celda (equilibrio calidad/tamaño)
+      const heightCells = pagePattern.length;
+      const widthCells = pagePattern[0]?.length ?? 0;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.max(1, widthCells * cellPx);
+      canvas.height = Math.max(1, heightCells * cellPx);
+      const ctx = canvas.getContext('2d');
+
+      // Fondo
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Dibujar cada celda
+      for (let y = 0; y < heightCells; y++) {
+        for (let x = 0; x < widthCells; x++) {
+          const dmc = pagePattern[y][x];
+          const px = x * cellPx;
+          const py = y * cellPx;
+
+          if (isSymbolicMode) {
+            // Modo simbólico: fondo blanco + símbolo
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(px, py, cellPx, cellPx);
+
+            if (dmc && symbolMap) {
+              const dmcHex = normalizeHex(dmc.hex);
+              const symbolInfo = getSymbolForColor(dmcHex, symbolMap);
+              drawSymbol(ctx, px, py, cellPx, symbolInfo.symbolType, symbolInfo.color);
+            }
+          } else {
+            // Modo color: relleno del color
+            const hexColor = dmc ? normalizeHex(dmc.hex) : '#ffffff';
+            ctx.fillStyle = hexColor;
+            ctx.fillRect(px, py, cellPx, cellPx);
+          }
+
+          // Rejilla
+          ctx.strokeStyle = '#d0d0d0';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(px, py, cellPx, cellPx);
+        }
+      }
+
+      return canvas.toDataURL('image/png');
+    };
+
     // Crear PDF
     const doc = new jsPDF('p', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth(); // 210mm
@@ -563,36 +617,15 @@ export default function Home() {
 
       const pagePattern = getPagePattern(pageIndex);
 
-      // Dibujar cada celda
-      for (let y = 0; y < pagePattern.length; y++) {
-        for (let x = 0; x < pagePattern[y].length; x++) {
-          const dmc = pagePattern[y][x];
-          
-          // Calcular posición en mm
-          const posX = 10 + x * CELL_SIZE_MM; // Margen izquierdo de 10mm
-          const posY = 10 + y * CELL_SIZE_MM; // Margen superior de 10mm
+      const pngDataUrl = renderPageToPngDataUrl(pagePattern);
+      const widthCells = pagePattern[0]?.length ?? 0;
+      const heightCells = pagePattern.length;
 
-          // Convertir hex a RGB para jsPDF
-          const hexColor = dmc ? (dmc.hex.startsWith('#') ? dmc.hex : '#' + dmc.hex) : '#ffffff';
-          const hexToRgb = (hex) => {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result ? [
-              parseInt(result[1], 16),
-              parseInt(result[2], 16),
-              parseInt(result[3], 16)
-            ] : [255, 255, 255];
-          };
+      const renderWidthMm = widthCells * CELL_SIZE_MM;
+      const renderHeightMm = heightCells * CELL_SIZE_MM;
+      const marginMm = 10;
 
-          const [r, g, b] = hexToRgb(hexColor);
-          doc.setFillColor(r, g, b);
-          doc.rect(posX, posY, CELL_SIZE_MM, CELL_SIZE_MM, 'F');
-
-          // Dibujar borde
-          doc.setDrawColor(200, 200, 200);
-          doc.setLineWidth(0.1);
-          doc.rect(posX, posY, CELL_SIZE_MM, CELL_SIZE_MM);
-        }
-      }
+      doc.addImage(pngDataUrl, 'PNG', marginMm, marginMm, renderWidthMm, renderHeightMm);
 
       // Agregar número de página
       doc.setFontSize(10);
@@ -601,7 +634,7 @@ export default function Home() {
     }
 
     // Descargar PDF
-    doc.save('crossy-art-pattern-pages.pdf');
+    doc.save(isSymbolicMode ? 'crossy-art-pattern-pages-symbolic.pdf' : 'crossy-art-pattern-pages.pdf');
   };
 
   // Función para eliminar el patrón
