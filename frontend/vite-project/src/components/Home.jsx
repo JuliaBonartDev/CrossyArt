@@ -411,7 +411,8 @@ export default function Home() {
 
     try {
       const response = await authService.login(loginUsername, loginPassword);
-      console.log('Successful login:', response);
+      // Avoid logging personal data (email/username) or tokens in console
+      console.log('Successful login:', response?.message || 'OK');
       
       // Refrescar el hook de autenticación
       refresh();
@@ -419,10 +420,10 @@ export default function Home() {
       // Limpiar formulario y cerrar modal
       handleCloseLoginModal();
       
-      // Aquí puedes actualizar el estado global de la aplicación si es necesario
-      // Por ejemplo, mostrar el nombre del usuario logueado en el header
+      
     } catch (error) {
-      console.error('Login error:', error);
+      // Avoid dumping full error objects (may include sensitive payloads)
+      console.error('Login error:', error?.message || 'Unknown error');
       setLoginError('Invalid username or password');
     } finally {
       setIsLoading(false);
@@ -460,7 +461,8 @@ export default function Home() {
 
     try {
       const response = await authService.register(username, email, password);
-      console.log('Registration successful:', response);
+      // Avoid logging personal data (email/username) or tokens in console
+      console.log('Registration successful:', response?.message || 'OK');
       
       setRegisterSuccess('Account created successfully! You can now log in.');
       
@@ -470,12 +472,14 @@ export default function Home() {
         setShowLoginModal(true);
       }, 2000);
     } catch (error) {
-      console.error('Registration error full:', error);
+      // Avoid dumping full error objects (may include sensitive payloads)
+      console.error('Registration error:', error?.message || 'Unknown error');
       
       // Manejo específico de errores del servidor
       if (error.message === 'Registration failed' && error.details) {
         const details = error.details;
-        console.log('Error details:', details);
+        // Do not log validation details: they may contain personal data
+        console.log('Registration validation errors:', Object.keys(details || {}));
         
         // Intentar extraer el primer error disponible
         if (details.email) {
